@@ -1,0 +1,158 @@
+{%- comment -%}
+  UtilsLA · Cabecera. Anuncio, logo, menú y carrito con el estilo de la portada.
+  Mantiene --header-height en <body> para que las escenas fijadas queden justo debajo.
+{%- endcomment -%}
+{{ 'utilsla-cine.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign menu = section.settings.menu
+  assign f_tit = section.settings.fuente_titulos
+  assign f_tit_it = f_tit | font_modify: 'style', 'italic'
+  assign f_txt = section.settings.fuente_texto
+  assign f_txt_med = f_txt | font_modify: 'weight', '500'
+-%}
+<style>
+  {{ f_tit | font_face: font_display: 'swap' }}
+  {{ f_tit_it | font_face: font_display: 'swap' }}
+  {{ f_txt | font_face: font_display: 'swap' }}
+  {{ f_txt_med | font_face: font_display: 'swap' }}
+  :root {
+    --ucx-f-tit: {{ f_tit.family }}, {{ f_tit.fallback_families }};
+    --ucx-f-txt: {{ f_txt.family }}, {{ f_txt.fallback_families }};
+  }
+</style>
+
+<div class="ucx ucx-cab" id="ucx-cab-{{ section.id }}" data-ucx-cab>
+  {%- if section.settings.anuncio != blank -%}
+    <p class="ucx-cab__anuncio">{{ section.settings.anuncio }}</p>
+  {%- endif -%}
+  <div class="ucx-cab__barra">
+    <a class="ucx-cab__logo" href="{{ routes.root_url }}">
+      {%- if section.settings.logo != blank -%}
+        {{ section.settings.logo | image_url: width: 320 | image_tag: height: 28, alt: shop.name, loading: 'eager' }}
+      {%- else -%}
+        {{ shop.name }}
+      {%- endif -%}
+    </a>
+
+    {%- if menu.links.size > 0 -%}
+      <nav class="ucx-cab__nav" aria-label="Principal">
+        <ul>
+          {%- for link in menu.links -%}
+            <li><a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    <div class="ucx-cab__acciones">
+      <a class="ucx-cab__carrito" href="{{ routes.cart_url }}" data-ucx-carrito>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8z" /><path d="M9 8V6.5a3 3 0 0 1 6 0V8" /></svg>
+        <span class="visually-hidden">Carrito</span>
+        <span class="ucx-cab__cuenta" data-ucx-cuenta {% if cart.item_count == 0 %}hidden{% endif %}>{{ cart.item_count }}</span>
+      </a>
+      {%- if menu.links.size > 0 -%}
+        <button class="ucx-cab__menu-btn" type="button" aria-expanded="false" aria-controls="ucx-menu-{{ section.id }}" data-ucx-abrir>
+          <span class="visually-hidden">Abrir menú</span>
+          <span class="ucx-cab__raya" aria-hidden="true"></span>
+          <span class="ucx-cab__raya" aria-hidden="true"></span>
+        </button>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if menu.links.size > 0 -%}
+    <div class="ucx-menu" id="ucx-menu-{{ section.id }}" role="dialog" aria-modal="true" aria-label="Menú" hidden data-ucx-menu>
+      <button class="ucx-menu__cerrar" type="button" data-ucx-cerrar>
+        <span class="visually-hidden">Cerrar menú</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+      </button>
+      <nav aria-label="Principal">
+        <ul class="ucx-menu__lista">
+          {%- for link in menu.links -%}
+            <li><a href="{{ link.url }}" {% if link.current %}aria-current="page"{% endif %}>{{ link.title }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+      <p class="ucx-menu__pie">Envío gratis a España, Francia y Alemania</p>
+    </div>
+  {%- endif -%}
+</div>
+
+<script>
+  (function () {
+    var raiz = document.getElementById('ucx-cab-{{ section.id }}');
+    if (!raiz) return;
+    var html = document.documentElement;
+
+    // Altura de la cabecera para el resto de la página
+    var fijarAltura = function () {
+      document.body.style.setProperty('--header-height', raiz.offsetHeight + 'px');
+      document.body.style.setProperty('--header-group-height', raiz.offsetHeight + 'px');
+    };
+    fijarAltura();
+    if ('ResizeObserver' in window) new ResizeObserver(fijarAltura).observe(raiz);
+
+    // Sombra al hacer scroll
+    var alScroll = function () {
+      var s = document.querySelector('.page-wrapper');
+      var y = (s && s.scrollTop) || window.scrollY || 0;
+      raiz.classList.toggle('is-desplazada', y > 8);
+    };
+    document.addEventListener('scroll', alScroll, { passive: true, capture: true });
+    alScroll();
+
+    // Menú móvil
+    var menu = raiz.querySelector('[data-ucx-menu]');
+    var abrir = raiz.querySelector('[data-ucx-abrir]');
+    var cerrar = raiz.querySelector('[data-ucx-cerrar]');
+    if (menu && abrir && cerrar) {
+      var alTeclado = function (e) {
+        if (e.key === 'Escape') cerrarMenu();
+      };
+      var abrirMenu = function () {
+        menu.hidden = false;
+        requestAnimationFrame(function () { menu.classList.add('is-abierto'); });
+        abrir.setAttribute('aria-expanded', 'true');
+        html.setAttribute('scroll-lock', '');
+        document.addEventListener('keydown', alTeclado);
+        cerrar.focus();
+      };
+      var cerrarMenu = function () {
+        menu.classList.remove('is-abierto');
+        abrir.setAttribute('aria-expanded', 'false');
+        html.removeAttribute('scroll-lock');
+        document.removeEventListener('keydown', alTeclado);
+        setTimeout(function () { menu.hidden = true; }, 400);
+        abrir.focus();
+      };
+      abrir.addEventListener('click', abrirMenu);
+      cerrar.addEventListener('click', cerrarMenu);
+      menu.querySelectorAll('a').forEach(function (a) { a.addEventListener('click', cerrarMenu); });
+    }
+
+    // Contador del carrito
+    var cuenta = raiz.querySelector('[data-ucx-cuenta]');
+    document.addEventListener('cart:update', function (e) {
+      var n = e && e.detail && e.detail.resource && e.detail.resource.item_count;
+      if (typeof n !== 'number' || !cuenta) return;
+      cuenta.textContent = n;
+      cuenta.hidden = n === 0;
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "UtilsLA cabecera",
+  "tag": "header",
+  "class": "ucx-cab-seccion",
+  "settings": [
+    { "type": "text", "id": "anuncio", "label": "Anuncio", "default": "Envío gratis a España, Francia y Alemania" },
+    { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Si no eliges logo se muestra el nombre de la tienda." },
+    { "type": "link_list", "id": "menu", "label": "Menú", "default": "main-menu" },
+    { "type": "font_picker", "id": "fuente_titulos", "label": "Titulares (todo el sitio)", "default": "bodoni_moda_n4" },
+    { "type": "font_picker", "id": "fuente_texto", "label": "Texto (todo el sitio)", "default": "instrument_sans_n4" }
+  ]
+}
+{% endschema %}
