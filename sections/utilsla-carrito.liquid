@@ -1,0 +1,137 @@
+{%- comment -%}
+  UtilsLA · Carrito con el estilo de la portada.
+  Funciona sin JS (botón «Actualizar»); con JS, cambiar la cantidad envía el formulario.
+{%- endcomment -%}
+{{ 'utilsla-cine.css' | asset_url | stylesheet_tag }}
+
+<div class="ucx ucx-carrito" id="ucx-carrito-{{ section.id }}">
+  <div class="uc-contenedor">
+    <p class="uc-eyebrow uc-eyebrow--oscuro">Carrito</p>
+    <h1 class="uc-h2 ucx-carrito__titulo">
+      {%- if cart.item_count > 0 -%}Tu pedido{%- else -%}Tu carrito está vacío{%- endif -%}
+    </h1>
+
+    {%- if cart.item_count > 0 -%}
+      <form class="ucx-carrito__rejilla" action="{{ routes.cart_url }}" method="post" novalidate data-ucx-carrito-form>
+        <ul class="ucx-carrito__lineas" aria-label="Productos del carrito">
+          {%- for item in cart.items -%}
+            <li class="ucx-linea">
+              <a class="ucx-linea__img" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
+                {%- if item.image -%}
+                  {{ item.image | image_url: width: 240 | image_tag: widths: '120, 240', sizes: '96px', alt: '', loading: 'lazy' }}
+                {%- else -%}
+                  <svg viewBox="0 0 200 172"><rect x="48" y="60" width="104" height="94" rx="42" fill="#1F2C48" /><ellipse cx="100" cy="64" rx="41" ry="16" fill="#0A0F1C" /><ellipse cx="100" cy="62" rx="30" ry="11" fill="#FFC778" /></svg>
+                {%- endif -%}
+              </a>
+              <div class="ucx-linea__info">
+                <a class="ucx-linea__nombre" href="{{ item.url }}">{{ item.product.title }}</a>
+                {%- unless item.product.has_only_default_variant -%}
+                  <p class="ucx-linea__variante">{{ item.variant.title }}</p>
+                {%- endunless -%}
+                {%- for descuento in item.line_level_discount_allocations -%}
+                  <p class="ucx-linea__descuento">{{ descuento.discount_application.title }} (−{{ descuento.amount | money }})</p>
+                {%- endfor -%}
+                <div class="ucx-linea__controles">
+                  <label class="visually-hidden" for="ucx-cant-{{ item.key }}">Cantidad de {{ item.product.title }}</label>
+                  <div class="ucx-cantidad">
+                    <button type="button" class="ucx-cantidad__btn" data-ucx-menos aria-label="Quitar una unidad">−</button>
+                    <input
+                      class="ucx-cantidad__input"
+                      id="ucx-cant-{{ item.key }}"
+                      type="number"
+                      name="updates[]"
+                      value="{{ item.quantity }}"
+                      min="0"
+                      inputmode="numeric"
+                    >
+                    <button type="button" class="ucx-cantidad__btn" data-ucx-mas aria-label="Añadir una unidad">+</button>
+                  </div>
+                  <a class="ucx-linea__quitar" href="{{ item.url_to_remove }}">Quitar</a>
+                </div>
+              </div>
+              <div class="ucx-linea__precio">
+                {%- if item.original_line_price > item.final_line_price -%}
+                  <s>{{ item.original_line_price | money }}</s>
+                {%- endif -%}
+                <strong>{{ item.final_line_price | money }}</strong>
+              </div>
+            </li>
+          {%- endfor -%}
+        </ul>
+
+        <aside class="ucx-resumen" aria-label="Resumen del pedido">
+          {%- for descuento in cart.cart_level_discount_applications -%}
+            <p class="ucx-resumen__fila"><span>{{ descuento.title }}</span><span>−{{ descuento.total_allocated_amount | money }}</span></p>
+          {%- endfor -%}
+          <p class="ucx-resumen__fila ucx-resumen__total">
+            <span>Total</span>
+            <strong>{{ cart.total_price | money_with_currency }}</strong>
+          </p>
+          <p class="ucx-resumen__nota">
+            {%- if cart.taxes_included -%}Impuestos incluidos.{%- else -%}Impuestos calculados al pagar.{%- endif %}
+            Los gastos de envío y los códigos de descuento se aplican en la página de pago.
+          </p>
+          <noscript><button type="submit" class="uc-btn ucx-resumen__actualizar">Actualizar carrito</button></noscript>
+          <button type="submit" name="checkout" class="uc-btn uc-btn--noche ucx-resumen__pagar">Pagar de forma segura</button>
+          {%- if additional_checkout_buttons -%}
+            <div class="ucx-resumen__rapido">{{ content_for_additional_checkout_buttons }}</div>
+          {%- endif -%}
+          <ul class="uc-confianza">
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></svg>
+              Envío gratis a España, Francia y Alemania
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
+              14 días de devolución
+            </li>
+            <li>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+              Pago seguro
+            </li>
+          </ul>
+        </aside>
+      </form>
+    {%- else -%}
+      <p class="ucx-carrito__vacio">Elige tu pack y la Navidad llega a casa en unos días.</p>
+      <a class="uc-btn uc-btn--noche" href="{{ routes.root_url }}"><span>Ver el proyector</span></a>
+    {%- endif -%}
+  </div>
+</div>
+
+<script>
+  (function () {
+    var form = document.querySelector('#ucx-carrito-{{ section.id }} [data-ucx-carrito-form]');
+    if (!form) return;
+    var enviar = function () {
+      form.classList.add('is-actualizando');
+      form.requestSubmit ? form.requestSubmit() : form.submit();
+    };
+    form.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-ucx-menos], [data-ucx-mas]');
+      if (!b) return;
+      var input = b.parentElement.querySelector('input');
+      var n = Math.max(0, (parseInt(input.value, 10) || 0) + (b.hasAttribute('data-ucx-mas') ? 1 : -1));
+      input.value = n;
+      enviar();
+    });
+    form.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && e.target.matches('input[name="updates[]"]')) {
+        e.preventDefault();
+        enviar();
+      }
+    });
+    form.addEventListener('change', function (e) {
+      if (e.target.matches('input[name="updates[]"]')) enviar();
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "UtilsLA carrito",
+  "tag": "section",
+  "class": "ucx-carrito-seccion",
+  "settings": []
+}
+{% endschema %}
