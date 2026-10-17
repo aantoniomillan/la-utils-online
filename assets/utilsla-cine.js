@@ -225,7 +225,7 @@
 
     sembrar() {
       const area = this.w * this.h;
-      const n = Math.round(limitar(area / (this.movil ? 9000 : 15000), 26, 90));
+      const n = Math.round(limitar(area / (this.movil ? 15000 : 26000), 16, 52));
       const dMin = Math.sqrt(area / n) * 0.62;
       const yMax = this.oy - this.h * 0.14;
       const puntos = [];
@@ -235,8 +235,8 @@
         if (puntos.every((p) => (p.x - x) ** 2 + (p.y - y) ** 2 > dMin * dMin)) puntos.push({ x, y });
         i++;
       }
-      const tMin = this.movil ? 12 : 14;
-      const tMax = this.movil ? 26 : 34;
+      const tMin = this.movil ? 10 : 12;
+      const tMax = this.movil ? 22 : 28;
       this.rMax = Math.hypot(Math.max(this.ox, this.w - this.ox), this.oy);
       this.particulas = puntos.map((pt) => ({
         a: Math.atan2(pt.y - this.oy, pt.x - this.ox),
@@ -284,7 +284,7 @@
         const tam = p.s * k * escala;
         const brillo = 0.72 + 0.28 * Math.sin(t * p.tw + p.fase);
         const fondo = limitar((this.oy - y) / (this.h * 0.16));
-        const alfa = this.intensidad * brillo * fondo * 0.92;
+        const alfa = this.intensidad * brillo * fondo * 0.62;
         if (alfa <= 0.01) continue;
         for (let m = 0; m < 4; m++) {
           const w = this.pesos[m];
@@ -698,60 +698,62 @@
         const cuenta = q(raiz, '[data-uc-cuenta]');
         const P_HERO = 0.14;
 
-        const setHeroY = gsap.quickSetter(hero, 'y', 'px');
-        const setHeroA = gsap.quickSetter(hero, 'opacity');
-        const setDisco = gsap.quickSetter(disco, 'rotation', 'deg');
-        const setHaloY = gsap.quickSetter(halo, 'y', 'px');
-        const motivoY = motivos.map((m) => gsap.quickSetter(m, 'y', 'px'));
-        const motivoA = motivos.map((m) => gsap.quickSetter(m, 'opacity'));
-        let ultimaCuenta = '';
+        if (marco) {
+          const setHeroY = gsap.quickSetter(hero, 'y', 'px');
+          const setHeroA = gsap.quickSetter(hero, 'opacity');
+          const setDisco = gsap.quickSetter(disco, 'rotation', 'deg');
+          const setHaloY = gsap.quickSetter(halo, 'y', 'px');
+          const motivoY = motivos.map((m) => gsap.quickSetter(m, 'y', 'px'));
+          const motivoA = motivos.map((m) => gsap.quickSetter(m, 'opacity'));
+          let ultimaCuenta = '';
 
-        function escenario(p) {
-          const h = limitar(p / P_HERO);
-          setHeroY(-70 * h);
-          setHeroA(1 - h);
-          hero.style.pointerEvents = h > 0.5 ? 'none' : '';
-          const a = suave(P_HERO * 0.55, P_HERO * 1.15, p);
-          eyebrowMotivos.style.opacity = a;
-          cabeceraMotivos.style.opacity = a;
-          const bruto = limitar((p - P_HERO) / (1 - P_HERO - 0.05)) * (MOTIVOS.length - 1);
-          const ent = Math.min(Math.floor(bruto), MOTIVOS.length - 2);
-          const frac = bruto - ent;
-          const m = ent + suave(0.3, 0.7, frac);
-          const pesos = MOTIVOS.map((_, k) => Math.max(0, 1 - Math.abs(m - k)));
-          if (pared) pared.pesos = pesos;
-          motivos.forEach((_, k) => {
-            motivoA[k](pesos[k] * a);
-            motivoY[k]((k - m) * 34);
-          });
-          setDisco(-m * 90);
-          iconos.forEach((ic, k) => {
-            ic.style.opacity = 0.3 + 0.7 * pesos[k];
-            ic.style.stroke = pesos[k] > 0.5 ? 'var(--uc-vela)' : '';
-          });
-          const c = '0' + (Math.round(m) + 1);
-          if (c !== ultimaCuenta) {
-            cuenta.textContent = c;
-            ultimaCuenta = c;
+          function escenario(p) {
+            const h = limitar(p / P_HERO);
+            setHeroY(-70 * h);
+            setHeroA(1 - h);
+            hero.style.pointerEvents = h > 0.5 ? 'none' : '';
+            const a = suave(P_HERO * 0.55, P_HERO * 1.15, p);
+            eyebrowMotivos.style.opacity = a;
+            cabeceraMotivos.style.opacity = a;
+            const bruto = limitar((p - P_HERO) / (1 - P_HERO - 0.05)) * (MOTIVOS.length - 1);
+            const ent = Math.min(Math.floor(bruto), MOTIVOS.length - 2);
+            const frac = bruto - ent;
+            const m = ent + suave(0.3, 0.7, frac);
+            const pesos = MOTIVOS.map((_, k) => Math.max(0, 1 - Math.abs(m - k)));
+            if (pared) pared.pesos = pesos;
+            motivos.forEach((_, k) => {
+              motivoA[k](suave(0.55, 0.95, pesos[k]) * a);
+              motivoY[k]((k - m) * 64);
+            });
+            setDisco(-m * 90);
+            iconos.forEach((ic, k) => {
+              ic.style.opacity = 0.3 + 0.7 * pesos[k];
+              ic.style.stroke = pesos[k] > 0.5 ? 'var(--uc-vela)' : '';
+            });
+            const c = '0' + (Math.round(m) + 1);
+            if (c !== ultimaCuenta) {
+              cuenta.textContent = c;
+              ultimaCuenta = c;
+            }
+            setHaloY(-50 * p);
           }
-          setHaloY(-50 * p);
-        }
 
-        ST.create({
-          ...S,
-          trigger: marco,
-          start: () => `top top+=${altoCabecera()}`,
-          end: () => '+=' + window.innerHeight * (movil ? 3.2 : 4.2),
-          pin: true,
-          pinType: 'fixed',
-          onUpdate: (s) => escenario(s.progress),
-          onRefresh: (s) => escenario(s.progress),
-        });
-        gsap.to(proyector, {
-          scale: 0.9,
-          ease: 'none',
-          scrollTrigger: { ...S, trigger: marco, start: () => `top top+=${altoCabecera()}`, end: () => '+=' + window.innerHeight * 0.7, scrub: 0.6 },
-        });
+          ST.create({
+            ...S,
+            trigger: marco,
+            start: () => `top top+=${altoCabecera()}`,
+            end: () => '+=' + window.innerHeight * (movil ? 3.2 : 4.2),
+            pin: true,
+            pinType: 'fixed',
+            onUpdate: (s) => escenario(s.progress),
+            onRefresh: (s) => escenario(s.progress),
+          });
+          gsap.to(proyector, {
+            scale: 0.9,
+            ease: 'none',
+            scrollTrigger: { ...S, trigger: marco, start: () => `top top+=${altoCabecera()}`, end: () => '+=' + window.innerHeight * 0.7, scrub: 0.6 },
+          });
+        }
 
         /* ---------- Escenas de uso encadenadas (cortina con máscara y contramáscara) ---------- */
         const usosMarco = q(raiz, '[data-uc-usos-marco]');
@@ -761,6 +763,7 @@
           const media = escenas.map((e) => q(e, '[data-uc-media]'));
           const PASO = 1.6;
           const tl = gsap.timeline({ defaults: { ease: 'none' } });
+          gsap.set(escenas, { visibility: 'visible' });
           tl.fromTo(lineas[0], { yPercent: 110 }, { yPercent: 0, duration: 0.5, stagger: 0.08, ease: 'power3.out' }, 0);
           tl.fromTo(media[0], { scale: 1.12 }, { scale: 1, duration: 1, ease: 'power1.out' }, 0);
           for (let i = 1; i < escenas.length; i++) {
@@ -896,6 +899,7 @@
           { opacity: v, duration: 0.5 },
         ];
         function entrada() {
+          if (!marco) return;
           const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
           tl.fromTo(proyector, { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2 }, 0);
           tl.to(lente, { keyframes: parpadeo(1) }, 0.5);
