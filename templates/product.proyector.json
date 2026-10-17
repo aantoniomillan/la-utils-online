@@ -304,9 +304,9 @@
             },
             "text_garantias": {
               "type": "text",
-              "name": "Garantías",
+              "name": "Envío y devoluciones",
               "settings": {
-                "text": "<p><strong>Envío a toda la Unión Europea.</strong> Gratis a España, Francia y Alemania; 8,99 € al resto de la UE. Entrega en 7 a 15 días laborables con número de seguimiento.</p><p><strong>14 días de devolución</strong> sin dar explicaciones.</p><p><strong>Pago seguro:</strong> datos cifrados, nunca vemos tu tarjeta.</p><p><strong>Garantía de 3 años:</strong> si falla, lo cambiamos.</p>",
+                "text": "<p><strong>Envío a toda la Unión Europea.</strong> Gratis a España, Francia y Alemania; 8,99 € al resto de la UE. Entrega en 7 a 15 días laborables con número de seguimiento.</p><p><strong>14 días de devolución</strong> sin dar explicaciones.</p><p><strong>Pago seguro:</strong> datos cifrados, nunca vemos tu tarjeta.</p>",
                 "width": "100%",
                 "max_width": "normal",
                 "alignment": "left",
