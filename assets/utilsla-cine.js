@@ -584,7 +584,7 @@
     // Contadores de ahorro
     const contadores = qa(raiz, '[data-uc-contador]');
 
-    // Sin GSAP (CDN caído): todo visible y funcional.
+    // Sin GSAP (no ha cargado): todo visible y funcional.
     if (!gsap || !ST) {
       html.classList.remove('uc-motion');
       const carga = q(raiz, '[data-uc-carga]');
@@ -855,6 +855,7 @@
             duration: 0.9,
             ease: 'power3.out',
             stagger: 0.08,
+            clearProps: 'transform',
             scrollTrigger: { ...S, trigger: tarjetas[0], start: 'top 88%', once: true },
           });
         }
@@ -882,6 +883,7 @@
             autoAlpha: 0,
             duration: 1,
             ease: 'power3.out',
+            clearProps: 'transform',
             scrollTrigger: { ...S, trigger: final, start: 'top 70%', once: true },
           });
         }
