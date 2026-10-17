@@ -1,18 +1,17 @@
 {%- assign p = section.settings.product -%}
-{%- if p == blank -%}{%- assign p = all_products['minirastreador'] -%}{%- endif -%}
-{%- assign v = p.selected_or_first_available_variant -%}
-{%- assign d2 = section.settings.descuento2 -%}
-{%- assign d3 = section.settings.descuento3 -%}
-{%- assign f2 = 100 | minus: d2 | times: 2 -%}
-{%- assign f3 = 100 | minus: d3 | times: 3 -%}
-{%- assign precio1 = v.price -%}
-{%- assign precio2 = v.price | times: f2 | divided_by: 100 -%}
-{%- assign precio3 = v.price | times: f3 | divided_by: 100 -%}
-{%- assign unidad2 = precio2 | divided_by: 2 -%}
-{%- assign unidad3 = precio3 | divided_by: 3 -%}
-{%- assign ahorro2 = v.price | times: 2 | minus: precio2 -%}
-{%- assign ahorro3 = v.price | times: 3 | minus: precio3 -%}
-{%- assign urlCompra = routes.cart_url | append: '/' | append: v.id | append: ':' -%}
+{%- if p == blank -%}{%- assign p = all_products['proyector-de-luces-navidenas'] -%}{%- endif -%}
+{%- assign v1 = p.variants | first -%}
+{%- assign recomendado = section.settings.pack_recomendado | default: 2 -%}
+{%- assign iRec = recomendado | minus: 1 -%}
+{%- assign vSel = p.variants[iRec] -%}
+{%- if vSel == blank or vSel.available == false -%}{%- assign vSel = p.selected_or_first_available_variant -%}{%- endif -%}
+{%- assign minUnidad = v1.price -%}
+{%- for var in p.variants -%}
+  {%- assign uds = var.title | split: ' ' | first | times: 1 -%}
+  {%- if uds < 1 -%}{%- assign uds = 1 -%}{%- endif -%}
+  {%- assign pu = var.price | times: 1.0 | divided_by: uds | round -%}
+  {%- if pu < minUnidad -%}{%- assign minUnidad = pu -%}{%- endif -%}
+{%- endfor -%}
 
 <style>
   #ul-{{ section.id }} {
@@ -51,15 +50,9 @@
 
   #ul-{{ section.id }} .ul-escena { position: relative; aspect-ratio: 4 / 5; border-radius: 28px; overflow: hidden; background: var(--ul-papel); box-shadow: 0 30px 60px -30px rgba(23, 53, 77, 0.35); }
   #ul-{{ section.id }} .ul-escena img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  #ul-{{ section.id }} .ul-ruta { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
-  #ul-{{ section.id }} .ul-ruta .ul-linea { fill: none; stroke: var(--ul-tornasol); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 6 9; filter: drop-shadow(0 1px 2px rgba(0,0,0,.35)); }
-  #ul-{{ section.id }} .ul-ruta .ul-trazo { fill: none; stroke: #fff; stroke-width: 10; stroke-dasharray: 900; stroke-dashoffset: 900; animation: ul-dibujar 2.2s ease-out .3s forwards; }
-  #ul-{{ section.id }} .ul-punto { fill: var(--ul-tornasol); opacity: 0; animation: ul-aparecer .3s ease-out 2.4s forwards; }
-  #ul-{{ section.id }} .ul-onda { fill: none; stroke: var(--ul-tornasol); stroke-width: 2; opacity: 0; transform-box: fill-box; transform-origin: center; animation: ul-onda 1.8s ease-out 2.5s 3; }
-  #ul-{{ section.id }} .ul-palomar { fill: var(--ul-pizarra); }
-  @keyframes ul-dibujar { to { stroke-dashoffset: 0; } }
-  @keyframes ul-aparecer { to { opacity: 1; } }
-  @keyframes ul-onda { 0% { opacity: .7; transform: scale(1); } 100% { opacity: 0; transform: scale(3.2); } }
+  #ul-{{ section.id }} .ul-noche { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #ul-{{ section.id }} .ul-copo { opacity: .9; animation: ul-brillo 3.2s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+  @keyframes ul-brillo { 0%, 100% { opacity: .95; } 50% { opacity: .45; } }
 
   #ul-{{ section.id }} .ul-confianza { display: flex; flex-wrap: wrap; gap: 8px 24px; margin-top: 20px; padding: 0; list-style: none; font-size: 0.9rem; color: var(--ul-gris); }
   #ul-{{ section.id }} .ul-confianza li { display: flex; align-items: center; gap: 8px; }
@@ -85,8 +78,9 @@
   #ul-{{ section.id }} .ul-pack:has(input:checked) { border-color: var(--ul-tornasol); background: #F2F9F8; }
   #ul-{{ section.id }} .ul-pack:has(input:checked) .ul-radio { border-color: var(--ul-tornasol); }
   #ul-{{ section.id }} .ul-pack:has(input:checked) .ul-radio::after { transform: scale(1); }
-  #ul-{{ section.id }} .ul-pack-nombre { font-weight: 600; font-size: 1.05rem; }
-  #ul-{{ section.id }} .ul-pack-detalle { font-size: 0.875rem; color: var(--ul-gris); margin-top: 2px; }
+  #ul-{{ section.id }} .ul-pack-nombre { display: block; font-weight: 600; font-size: 1.05rem; }
+  #ul-{{ section.id }} .ul-pack-detalle { display: block; font-size: 0.875rem; color: var(--ul-gris); margin-top: 2px; }
+  #ul-{{ section.id }} .ul-pack:has(input:disabled) { opacity: .5; cursor: not-allowed; }
   #ul-{{ section.id }} .ul-pack-precio { text-align: right; font-weight: 700; font-size: 1.15rem; }
   #ul-{{ section.id }} .ul-pack-precio s { display: block; font-weight: 400; font-size: 0.85rem; color: var(--ul-gris); }
   #ul-{{ section.id }} .ul-etiqueta { position: absolute; top: -11px; right: 18px; padding: 3px 10px; border-radius: 999px; background: var(--ul-pizarra); color: #fff; font-size: 0.75rem; font-weight: 600; }
@@ -135,25 +129,55 @@
   }
   @media (prefers-reduced-motion: reduce) {
     #ul-{{ section.id }} *, #ul-{{ section.id }} *::before, #ul-{{ section.id }} *::after { animation: none !important; transition: none !important; }
-    #ul-{{ section.id }} .ul-ruta .ul-trazo { stroke-dashoffset: 0; }
-    #ul-{{ section.id }} .ul-punto { opacity: 1; }
   }
 </style>
 
+{%- capture escena -%}
+  <svg class="ul-noche" viewBox="0 0 400 500" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Fachada iluminada con copos de nieve proyectados">
+    <rect width="400" height="500" fill="url(#ul-cielo-{{ section.id }})"/>
+    <path d="M70 230 L200 130 L330 230 V430 H70 Z" fill="#1E4664"/>
+    <path d="M52 238 L200 120 L348 238" fill="none" stroke="#0F2638" stroke-width="14" stroke-linejoin="round"/>
+    <rect x="175" y="330" width="50" height="100" rx="4" fill="#0F2638"/>
+    <rect x="100" y="270" width="44" height="44" rx="3" fill="#F4D38B" opacity=".85"/>
+    <rect x="256" y="270" width="44" height="44" rx="3" fill="#F4D38B" opacity=".85"/>
+    <polygon points="200,478 70,200 330,200" fill="url(#ul-haz-{{ section.id }})"/>
+    <g fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round">
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="105" y="205" width="22" height="22"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="160" y="180" width="16" height="16" style="animation-delay:.6s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="230" y="196" width="26" height="26" style="animation-delay:1.2s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="280" y="230" width="18" height="18" style="animation-delay:.3s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="150" y="240" width="20" height="20" style="animation-delay:1.8s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="205" y="260" width="14" height="14" style="animation-delay:.9s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="90" y="330" width="24" height="24" style="animation-delay:1.5s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="250" y="335" width="22" height="22" style="animation-delay:2.1s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="300" y="380" width="16" height="16" style="animation-delay:.4s"/>
+      <use class="ul-copo" href="#ul-copo-{{ section.id }}" x="125" y="390" width="15" height="15" style="animation-delay:2.4s"/>
+    </g>
+    <rect x="186" y="462" width="28" height="18" rx="5" fill="#0F2638" stroke="#F4D38B" stroke-width="1.5"/>
+  </svg>
+{%- endcapture -%}
+
 <div id="ul-{{ section.id }}">
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="ul-cielo-{{ section.id }}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1C2B"/><stop offset="1" stop-color="#17354D"/></linearGradient>
+      <linearGradient id="ul-haz-{{ section.id }}" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#F4D38B" stop-opacity=".45"/><stop offset="1" stop-color="#F4D38B" stop-opacity="0"/></linearGradient>
+      <symbol id="ul-copo-{{ section.id }}" viewBox="-10 -10 20 20"><path d="M0-9V9M-7.8-4.5 7.8 4.5M-7.8 4.5 7.8-4.5M0-9l-2.5-2.5M0-9l2.5-2.5M0 9l-2.5 2.5M0 9l2.5 2.5" transform="scale(.8)"/></symbol>
+    </defs>
+  </svg>
   <section class="ul-hero">
     <div class="ul-wrap">
       <div>
         <h1>{{ section.settings.titulo }}</h1>
         <p class="ul-sub">{{ section.settings.subtitulo }}</p>
         <dl class="ul-specs">
-          <div><dt>2,2 g</dt><dd>Peso</dd></div>
-          <div><dt>30 días</dt><dd>De batería</dd></div>
-          <div><dt>IP68</dt><dd>Agua y polvo</dd></div>
+          <div><dt>USB</dt><dd>Conexión</dd></div>
+          <div><dt>1 min</dt><dd>Listo para usar</dd></div>
+          <div><dt>Int. y ext.</dt><dd>Resistente al agua</dd></div>
         </dl>
         <div class="ul-accion">
           <a class="ul-btn" href="#ul-comprar">Elegir pack</a>
-          <p class="ul-desde">Desde <strong>{{ unidad3 | money }}</strong> por unidad</p>
+          <p class="ul-desde">Desde <strong>{{ minUnidad | money }}</strong> por unidad</p>
         </div>
         <ul class="ul-confianza">
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Envío gratis a España, Francia y Alemania</li>
@@ -161,18 +185,11 @@
         </ul>
       </div>
       <div class="ul-escena">
-        {%- assign imgHero = p.images | where: 'alt', 'MiniRastreador colocado en la pata de una paloma' | first -%}
-        {%- if imgHero == blank -%}{%- assign imgHero = p.featured_image -%}{%- endif -%}
-        {%- if imgHero -%}
-          {{ imgHero | image_url: width: 1000 | image_tag: loading: 'eager', fetchpriority: 'high', alt: imgHero.alt, sizes: '(max-width: 860px) 90vw, 480px' }}
+        {%- if p.featured_image -%}
+          {{ p.featured_image | image_url: width: 1000 | image_tag: loading: 'eager', fetchpriority: 'high', alt: p.featured_image.alt | default: p.title, sizes: '(max-width: 860px) 90vw, 480px' }}
+        {%- else -%}
+          {{ escena }}
         {%- endif -%}
-        <svg class="ul-ruta" viewBox="0 0 400 400" aria-hidden="true">
-          <defs><mask id="ul-mascara-{{ section.id }}"><path class="ul-trazo" d="M52 340 C 90 250, 150 330, 205 240 S 300 120, 336 70"/></mask></defs>
-          <path class="ul-linea" mask="url(#ul-mascara-{{ section.id }})" d="M52 340 C 90 250, 150 330, 205 240 S 300 120, 336 70"/>
-          <g class="ul-palomar"><path d="M38 352 l14 -12 l14 12 v14 h-28z"/></g>
-          <circle class="ul-onda" cx="336" cy="70" r="9"/>
-          <circle class="ul-punto" cx="336" cy="70" r="9"/>
-        </svg>
       </div>
     </div>
   </section>
@@ -183,6 +200,8 @@
         <div class="ul-principal">
           {%- if p.featured_image -%}
             {{ p.featured_image | image_url: width: 1100 | image_tag: loading: 'lazy', alt: p.title, class: 'ul-img-principal', sizes: '(max-width: 860px) 92vw, 520px' }}
+          {%- else -%}
+            <div style="position:relative;width:100%;height:100%">{{ escena }}</div>
           {%- endif -%}
         </div>
         {%- if p.images.size > 1 -%}
@@ -198,37 +217,32 @@
 
       <div>
         <h2>{{ p.title }}</h2>
-        <p class="ul-sub">Elige cuántos necesitas. El descuento del pack se aplica solo al pagar.</p>
+        <p class="ul-sub">Elige tu pack. Cuantos más, más ahorras.</p>
         <fieldset class="ul-packs">
-          <legend class="visually-hidden">Cantidad</legend>
-          <label class="ul-pack">
-            <input type="radio" name="ul-pack-{{ section.id }}" value="1" data-total="{{ precio1 | money }}">
-            <span class="ul-radio"></span>
-            <span><span class="ul-pack-nombre">1 unidad</span></span>
-            <span class="ul-pack-precio">{{ precio1 | money }}</span>
-          </label>
-          <label class="ul-pack">
-            <span class="ul-etiqueta">Recomendado</span>
-            <input type="radio" name="ul-pack-{{ section.id }}" value="2" data-total="{{ precio2 | money }}" checked>
-            <span class="ul-radio"></span>
-            <span>
-              <span class="ul-pack-nombre">2 unidades</span>
-              <span class="ul-pack-detalle">{{ unidad2 | money }} cada uno, <span class="ul-ahorro">ahorras {{ ahorro2 | money }}</span></span>
-            </span>
-            <span class="ul-pack-precio"><s>{{ v.price | times: 2 | money }}</s>{{ precio2 | money }}</span>
-          </label>
-          <label class="ul-pack">
-            <input type="radio" name="ul-pack-{{ section.id }}" value="3" data-total="{{ precio3 | money }}">
-            <span class="ul-radio"></span>
-            <span>
-              <span class="ul-pack-nombre">3 unidades</span>
-              <span class="ul-pack-detalle">{{ unidad3 | money }} cada uno, <span class="ul-ahorro">ahorras {{ ahorro3 | money }}</span></span>
-            </span>
-            <span class="ul-pack-precio"><s>{{ v.price | times: 3 | money }}</s>{{ precio3 | money }}</span>
-          </label>
+          <legend class="visually-hidden">Pack</legend>
+          {%- for var in p.variants -%}
+            {%- assign uds = var.title | split: ' ' | first | times: 1 -%}
+            {%- if uds < 1 -%}{%- assign uds = 1 -%}{%- endif -%}
+            {%- assign tachado = var.compare_at_price -%}
+            {%- if tachado == blank or tachado <= var.price -%}{%- assign tachado = v1.price | times: uds -%}{%- endif -%}
+            {%- assign ahorro = tachado | minus: var.price -%}
+            <label class="ul-pack">
+              {%- if forloop.index == recomendado and p.variants.size > 1 -%}<span class="ul-etiqueta">Recomendado</span>{%- endif -%}
+              <input type="radio" name="ul-pack-{{ section.id }}" value="{{ var.id }}" data-total="{{ var.price | money }}"{% if var.id == vSel.id %} checked{% endif %}{% unless var.available %} disabled{% endunless %}>
+              <span class="ul-radio"></span>
+              <span>
+                <span class="ul-pack-nombre">{{ var.title }}</span>
+                {%- if uds > 1 -%}
+                  <span class="ul-pack-detalle">{{ var.price | times: 1.0 | divided_by: uds | round | money }} cada uno{% if ahorro > 0 %}, <span class="ul-ahorro">ahorras {{ ahorro | money }}</span>{% endif %}</span>
+                {%- endif -%}
+                {%- unless var.available -%}<span class="ul-pack-detalle">Agotado</span>{%- endunless -%}
+              </span>
+              <span class="ul-pack-precio">{% if ahorro > 0 %}<s>{{ tachado | money }}</s>{% endif %}{{ var.price | money }}</span>
+            </label>
+          {%- endfor -%}
         </fieldset>
-        {%- if v.available -%}
-          <a class="ul-btn ul-comprar" href="{{ routes.cart_url }}" data-base="{{ urlCompra }}" data-destino="{% if section.settings.destino == 'pago' %}/checkout{% else %}{{ routes.cart_url }}{% endif %}">Comprar por {{ precio2 | money }}</a>
+        {%- if p.available -%}
+          <a class="ul-btn ul-comprar" href="{{ routes.cart_url }}" data-destino="{% if section.settings.destino == 'pago' %}/checkout{% else %}{{ routes.cart_url }}{% endif %}">Comprar por {{ vSel.price | money }}</a>
         {%- else -%}
           <span class="ul-btn ul-comprar" aria-disabled="true">Agotado temporalmente</span>
         {%- endif -%}
@@ -247,9 +261,9 @@
     <div class="ul-wrap">
       <h2>Cómo funciona</h2>
       <ol>
-        <li><h3>Colócalo</h3><p>Ajusta el anillo en la pata trasera del ave.</p></li>
-        <li><h3>Vincúlalo</h3><p>Descarga la aplicación y empareja el rastreador.</p></li>
-        <li><h3>Consúltalo</h3><p>Mira su ubicación desde el móvil cuando quieras.</p></li>
+        <li><h3>Conéctalo</h3><p>Enchúfalo por USB a un cargador.</p></li>
+        <li><h3>Apúntalo</h3><p>Oriéntalo hacia una pared, una fachada o el techo.</p></li>
+        <li><h3>Disfrútalo</h3><p>En un minuto tienes copos de nieve y figuras navideñas en movimiento.</p></li>
       </ol>
     </div>
   </section>
@@ -259,13 +273,14 @@
       <h2>Preguntas frecuentes</h2>
       <details><summary>¿Cuánto tarda en llegar?</summary><p>Entre 7 y 15 días laborables. Te enviamos el número de seguimiento por email en cuanto sale.</p></details>
       <details><summary>¿Cuánto cuesta el envío?</summary><p>Es gratis a España, Francia y Alemania. Al resto de la Unión Europea cuesta 8,99 €.</p></details>
-      <details><summary>¿Le molesta al ave?</summary><p>Pesa 2,2 gramos y va en la pata trasera, así que no interfiere con el vuelo.</p></details>
+      <details><summary>¿Se puede usar en el exterior?</summary><p>Sí. Es resistente al agua y sirve tanto dentro de casa como fuera: paredes, fachadas, techos o el jardín.</p></details>
+      <details><summary>¿Cómo se conecta?</summary><p>Por USB. Basta con enchufarlo a un cargador USB y apuntarlo hacia donde quieras proyectar.</p></details>
       <details><summary>¿Y si no me convence?</summary><p>Tienes 14 días desde que lo recibes para devolverlo. {% if shop.refund_policy %}<a href="{{ shop.refund_policy.url }}">Ver política de devoluciones</a>{% endif %}</p></details>
     </div>
   </section>
 
   <div class="ul-barra" aria-hidden="true">
-    <p><strong>{{ p.title }}</strong>Desde {{ unidad3 | money }} por unidad</p>
+    <p><strong>{{ p.title }}</strong>Desde {{ minUnidad | money }} por unidad</p>
     <a class="ul-btn" href="#ul-comprar" tabindex="-1">Comprar</a>
   </div>
 </div>
@@ -274,7 +289,7 @@
   (function () {
     const raiz = document.getElementById('ul-{{ section.id }}');
     if (!raiz) return;
-    const btnCompra = raiz.querySelector('.ul-comprar[data-base]');
+    const btnCompra = raiz.querySelector('.ul-comprar[data-destino]');
     raiz.querySelectorAll('.ul-packs input').forEach(function (inp) {
       inp.addEventListener('change', function () {
         if (!btnCompra) return;
@@ -287,12 +302,12 @@
         if (btnCompra.dataset.ocupado) return;
         btnCompra.dataset.ocupado = '1';
         const sel = raiz.querySelector('.ul-packs input:checked');
-        const cant = sel ? parseInt(sel.value, 10) : 1;
+        const idVariante = sel ? parseInt(sel.value, 10) : {{ vSel.id }};
         const cab = { 'Content-Type': 'application/json', 'Accept': 'application/json' };
         btnCompra.style.opacity = '0.7';
         fetch('{{ routes.cart_clear_url }}.js', { method: 'POST', headers: cab })
           .then(function () {
-            return fetch('{{ routes.cart_add_url }}.js', { method: 'POST', headers: cab, body: JSON.stringify({ items: [{ id: {{ v.id }}, quantity: cant }] }) });
+            return fetch('{{ routes.cart_add_url }}.js', { method: 'POST', headers: cab, body: JSON.stringify({ items: [{ id: idVariante, quantity: 1 }] }) });
           })
           .then(function (r) {
             if (!r.ok) throw new Error('add');
@@ -336,10 +351,9 @@
   "name": "UtilsLA portada",
   "settings": [
     { "type": "product", "id": "product", "label": "Producto" },
-    { "type": "text", "id": "titulo", "label": "Título", "default": "Localiza a tu ave desde el móvil" },
-    { "type": "textarea", "id": "subtitulo", "label": "Subtítulo", "default": "Un anillo que se coloca en la pata trasera y se consulta desde la aplicación." },
-    { "type": "number", "id": "descuento2", "label": "Descuento pack 2 (%)", "default": 10 },
-    { "type": "number", "id": "descuento3", "label": "Descuento pack 3 (%)", "default": 15 },
+    { "type": "text", "id": "titulo", "label": "Título", "default": "Tu casa, iluminada de Navidad en un minuto" },
+    { "type": "textarea", "id": "subtitulo", "label": "Subtítulo", "default": "Proyecta copos de nieve y figuras navideñas sobre paredes, fachadas y techos." },
+    { "type": "number", "id": "pack_recomendado", "label": "Pack recomendado (posición de la variante)", "default": 2 },
     { "type": "select", "id": "destino", "label": "Al comprar, ir a", "options": [{ "value": "carrito", "label": "Carrito" }, { "value": "pago", "label": "Pago directo" }], "default": "carrito" }
   ],
   "presets": [{ "name": "UtilsLA portada" }]

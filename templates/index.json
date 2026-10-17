@@ -12,13 +12,11 @@
     "portada": {
       "type": "utilsla-landing",
       "settings": {
-        "product": "minirastreador",
-        "titulo": "Localiza a tu ave desde el móvil",
-        "subtitulo": "Un anillo de 2,2 g que se coloca en la pata y se consulta desde la aplicación. Fiable, resistente y pensado para no molestar al ave.",
-        "descuento2": 10,
-        "descuento3": 15
-      },
-      "custom_css": [".ul-ruta {display: none;}"]
+        "product": "proyector-de-luces-navidenas",
+        "titulo": "Tu casa, iluminada de Navidad en un minuto",
+        "subtitulo": "Proyecta copos de nieve y figuras navideñas sobre paredes, fachadas y techos. Se conecta por USB y sirve para interior y exterior.",
+        "pack_recomendado": 2
+      }
     }
   },
   "order": ["portada"]
