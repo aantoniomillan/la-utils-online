@@ -1,0 +1,82 @@
+{%- comment -%}
+  Packs reales del producto (variantes) con precio por unidad y ahorro.
+  Uso: {% render 'utilsla-packs', producto: product, recomendado: 2 %}
+  Sin JS funciona como un formulario normal de añadir al carrito.
+{%- endcomment -%}
+{%- liquid
+  assign p = producto
+  assign v_uno = p.variants | first
+  assign i_rec = recomendado | default: 2 | minus: 1
+  assign v_sel = p.variants[i_rec]
+  if v_sel == blank or v_sel.available == false
+    assign v_sel = p.selected_or_first_available_variant
+  endif
+  assign recomendado = i_rec | plus: 1
+-%}
+<form class="uc-packs__form" action="{{ routes.cart_add_url }}" method="post" data-uc-form>
+  <fieldset class="uc-packs__lista">
+    <legend class="visually-hidden">Elige tu pack</legend>
+    {%- for var in p.variants -%}
+      {%- liquid
+        assign uds = var.title | split: ' ' | first | times: 1
+        if uds < 1
+          assign uds = 1
+        endif
+        assign tachado = var.compare_at_price
+        if tachado == blank or tachado <= var.price
+          assign tachado = v_uno.price | times: uds
+        endif
+        assign ahorro = tachado | minus: var.price
+        case forloop.index
+          when 1
+            assign nota = 'Para una estancia'
+          when 2
+            assign nota = 'Salón y fachada'
+          when 3
+            assign nota = 'Y uno para regalar'
+          else
+            assign nota = ''
+        endcase
+      -%}
+      <label class="uc-pack" data-uc-pack>
+        <input
+          class="uc-pack__radio"
+          type="radio"
+          name="id"
+          value="{{ var.id }}"
+          data-nombre="{{ var.title | escape }}"
+          data-precio="{{ var.price | money }}"
+          {% if var.id == v_sel.id %}checked{% endif %}
+          {% unless var.available %}disabled{% endunless %}
+        >
+        <span class="uc-pack__punto" aria-hidden="true"></span>
+        <span class="uc-pack__info">
+          <span class="uc-pack__nombre">{{ var.title }}</span>
+          {%- if nota != '' -%}<span class="uc-pack__nota">{{ nota }}</span>{%- endif -%}
+          {%- unless var.available -%}<span class="uc-pack__nota">Agotado</span>{%- endunless -%}
+        </span>
+        <span class="uc-pack__cifras">
+          <span class="uc-pack__precio">{{ var.price | money }}</span>
+          {%- if uds > 1 -%}
+            <span class="uc-pack__unidad">{{ var.price | times: 1.0 | divided_by: uds | round | money }} la unidad</span>
+          {%- endif -%}
+          {%- if ahorro > 0 -%}
+            <span class="uc-pack__ahorro">Ahorras <span data-uc-contador>{{ ahorro | money }}</span></span>
+          {%- endif -%}
+        </span>
+        {%- if forloop.index == recomendado and p.variants.size > 1 -%}
+          <span class="uc-pack__sello">Recomendado</span>
+        {%- endif -%}
+      </label>
+    {%- endfor -%}
+  </fieldset>
+  <input type="hidden" name="quantity" value="1">
+  {%- if p.available -%}
+    <button type="submit" class="uc-btn uc-btn--noche uc-packs__boton" data-uc-comprar>
+      <span>Añadir al carrito · <span data-uc-total>{{ v_sel.price | money }}</span></span>
+    </button>
+  {%- else -%}
+    <button type="button" class="uc-btn uc-btn--noche uc-packs__boton" disabled>Agotado temporalmente</button>
+  {%- endif -%}
+  <p class="uc-packs__estado" data-uc-estado role="status" aria-live="polite"></p>
+</form>

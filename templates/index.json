@@ -1,23 +1,13 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
-    "portada": {
-      "type": "utilsla-landing",
+    "cine": {
+      "type": "utilsla-cine",
       "settings": {
         "product": "proyector-de-luces-navidenas",
-        "titulo": "Tu casa, iluminada de Navidad en un minuto",
-        "subtitulo": "Proyecta copos de nieve y figuras navideñas sobre paredes, fachadas y techos. Se conecta por USB y sirve para interior y exterior.",
-        "pack_recomendado": 2
+        "pack_recomendado": 2,
+        "mostrar_carga": true
       }
     }
   },
-  "order": ["portada"]
+  "order": ["cine"]
 }

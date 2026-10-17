@@ -1,0 +1,439 @@
+{%- comment -%}
+  UtilsLA · Portada cinematográfica del proyector de luces navideñas.
+  Marcado y datos. La animación vive en assets/utilsla-cine.js y el estilo en assets/utilsla-cine.css.
+
+  Escenas de uso: cada <article data-scene> busca, por este orden:
+    1. La imagen o el vídeo elegidos en el editor de temas (ajustes de la sección).
+    2. Los archivos assets/escena-<id>.jpg y assets/escena-<id>.mp4, si existen.
+    3. El fondo provisional dibujado en SVG.
+  Imagen del proyector: ajuste "Imagen del proyector" o assets/proyector.png (PNG con fondo transparente).
+{%- endcomment -%}
+
+{%- liquid
+  assign p = section.settings.product
+  if p == blank
+    assign p = all_products['proyector-de-luces-navidenas']
+  endif
+
+  assign hay_producto = false
+  if p.id != blank and p.variants.size > 0
+    assign hay_producto = true
+  endif
+
+  assign v_uno = p.variants | first
+  assign recomendado = section.settings.pack_recomendado | default: 2
+  assign i_rec = recomendado | minus: 1
+  assign v_sel = p.variants[i_rec]
+  if v_sel == blank or v_sel.available == false
+    assign v_sel = p.selected_or_first_available_variant
+  endif
+
+  assign min_unidad = v_uno.price
+  for var in p.variants
+    assign uds = var.title | split: ' ' | first | times: 1
+    if uds < 1
+      assign uds = 1
+    endif
+    assign por_unidad = var.price | times: 1.0 | divided_by: uds | round
+    if por_unidad < min_unidad
+      assign min_unidad = por_unidad
+    endif
+  endfor
+
+  assign base_assets = 'utilsla-cine.css' | asset_url | split: 'utilsla-cine.css' | first
+
+  assign f_tit = section.settings.fuente_titulos
+  assign f_tit_it = f_tit | font_modify: 'style', 'italic'
+  assign f_txt = section.settings.fuente_texto
+  assign f_txt_med = f_txt | font_modify: 'weight', '500'
+
+  assign con_carga = section.settings.mostrar_carga
+  if request.design_mode
+    assign con_carga = false
+  endif
+-%}
+
+<style>
+  {{ f_tit | font_face: font_display: 'swap' }}
+  {{ f_tit_it | font_face: font_display: 'swap' }}
+  {{ f_txt | font_face: font_display: 'swap' }}
+  {{ f_txt_med | font_face: font_display: 'swap' }}
+  #uc-{{ section.id }} {
+    --uc-f-tit: {{ f_tit.family }}, {{ f_tit.fallback_families }};
+    --uc-f-txt: {{ f_txt.family }}, {{ f_txt.fallback_families }};
+  }
+</style>
+{{ 'utilsla-cine.css' | asset_url | stylesheet_tag }}
+
+<script>
+  (function () {
+    var html = document.documentElement;
+    html.classList.add('uc-js');
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) html.classList.add('uc-motion');
+    // Red de seguridad: si la animación no llega a arrancar, el contenido se muestra igual.
+    setTimeout(function () {
+      if (window.UtilsCine) return;
+      html.classList.remove('uc-motion');
+      var carga = document.querySelector('.uc-carga');
+      if (carga) carga.remove();
+    }, 6000);
+  })();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/gsap.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/ScrollTrigger.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.15.0/dist/SplitText.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/lenis@1.3.26/dist/lenis.min.js" defer></script>
+<script src="{{ 'utilsla-cine.js' | asset_url }}" defer></script>
+
+<div
+  id="uc-{{ section.id }}"
+  class="uc"
+  data-uc
+  data-assets="{{ base_assets }}"
+  data-carrito="{{ routes.cart_url }}"
+  data-carrito-add="{{ routes.cart_add_url }}"
+  {% if request.design_mode %}data-editor{% endif %}
+>
+  {%- if con_carga -%}
+    <div class="uc-carga" data-uc-carga aria-hidden="true">
+      <div class="uc-carga__centro">
+        <svg class="uc-carga__copo" viewBox="-12 -12 24 24" aria-hidden="true">
+          <path d="M0-10V10M-8.66-5 8.66 5M-8.66 5 8.66-5M0-6l-2.4-2.4M0-6l2.4-2.4M0 6l-2.4 2.4M0 6l2.4 2.4" />
+        </svg>
+        <p class="uc-carga__texto">Encendiendo la Navidad</p>
+        <p class="uc-carga__cifra"><span data-uc-carga-cifra>0</span><span class="uc-carga__pct">%</span></p>
+        <span class="uc-carga__pista"><span data-uc-carga-barra></span></span>
+      </div>
+    </div>
+  {%- endif -%}
+
+  <div class="uc-progreso" aria-hidden="true"><span data-uc-progreso></span></div>
+
+  {%- comment -%} Escenario: hero + pared de efectos (se fija al hacer scroll) {%- endcomment -%}
+  <section class="uc-escenario" data-uc-escenario aria-label="Proyector de luces navideñas">
+    <div class="uc-marco" data-uc-marco>
+      <canvas class="uc-pared" data-uc-pared aria-hidden="true"></canvas>
+      <div class="uc-halo" data-uc-halo aria-hidden="true"></div>
+
+      <div class="uc-hero">
+        <p class="uc-eyebrow" data-uc-intro>UtilsLA · Proyector de luces navideñas</p>
+        <h1 class="uc-hero__titulo" data-uc-titulo>{{ section.settings.titulo }}</h1>
+        <p class="uc-hero__sub" data-uc-intro>{{ section.settings.subtitulo }}</p>
+        {%- if hay_producto -%}
+          <div class="uc-hero__accion" data-uc-intro>
+            <a class="uc-btn uc-btn--luz" href="#uc-packs-{{ section.id }}" data-uc-ancla>
+              <span>Elegir pack</span>
+              <svg class="uc-btn__flecha" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" /></svg>
+            </a>
+            <p class="uc-hero__precio">Desde <strong>{{ min_unidad | money }}</strong> la unidad</p>
+          </div>
+        {%- endif -%}
+        <p class="uc-desliza" data-uc-intro data-uc-desliza><span class="uc-desliza__linea" aria-hidden="true"></span>Desliza para descubrir</p>
+      </div>
+
+      <div class="uc-proyector" data-uc-proyector>
+        <div class="uc-haz" data-uc-haz aria-hidden="true"><span class="uc-haz__color"></span></div>
+        <span class="uc-lente-brillo" data-uc-lente aria-hidden="true"></span>
+        {%- if section.settings.imagen_proyector != blank -%}
+          {{
+            section.settings.imagen_proyector
+            | image_url: width: 600
+            | image_tag:
+              widths: '240, 360, 480, 600',
+              sizes: '(min-width: 990px) 180px, 140px',
+              loading: 'eager',
+              class: 'uc-proyector__img',
+              alt: p.title
+          }}
+        {%- else -%}
+          <svg class="uc-proyector__svg" data-uc-proyector-svg viewBox="0 0 200 172" role="img" aria-label="{{ p.title | default: 'Proyector de luces navideñas' | escape }}">
+            <defs>
+              <linearGradient id="uc-cuerpo-{{ section.id }}" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#34425F" /><stop offset=".55" stop-color="#1B2640" /><stop offset="1" stop-color="#0B1120" />
+              </linearGradient>
+              <radialGradient id="uc-lente-{{ section.id }}" cx=".42" cy=".38" r=".7">
+                <stop offset="0" stop-color="#FFF6E6" /><stop offset=".35" stop-color="#FFC778" /><stop offset=".78" stop-color="#6D4214" /><stop offset="1" stop-color="#140D05" />
+              </radialGradient>
+            </defs>
+            <ellipse cx="100" cy="162" rx="64" ry="7" fill="#000" opacity=".4" />
+            <path d="M100 158c0 9 34 9 100 9" fill="none" stroke="#1C2742" stroke-width="3" stroke-linecap="round" />
+            <path d="M72 148h56l-7 12H79z" fill="#121A2B" />
+            <rect x="48" y="60" width="104" height="94" rx="42" fill="url(#uc-cuerpo-{{ section.id }})" />
+            <path d="M63 96c7-20 22-28 40-30" fill="none" stroke="#fff" stroke-opacity=".16" stroke-width="3" stroke-linecap="round" />
+            <ellipse cx="100" cy="64" rx="41" ry="16" fill="#0A0F1C" stroke="#3A4866" stroke-width="2" />
+            <ellipse class="uc-proyector__lente" cx="100" cy="62" rx="30" ry="11" fill="url(#uc-lente-{{ section.id }})" />
+          </svg>
+        {%- endif -%}
+      </div>
+
+      <div class="uc-motivos" data-uc-motivos>
+        <p class="uc-eyebrow uc-motivos__eyebrow">Lo que verás en la pared</p>
+        <div class="uc-motivos__cabecera" aria-hidden="true">
+          <svg class="uc-disco" data-uc-disco viewBox="-50 -50 100 100">
+            <circle r="46" class="uc-disco__aro" />
+            <circle r="30" class="uc-disco__aro uc-disco__aro--fino" />
+            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(0 -38)"><path d="M0-6V6M-5.2-3 5.2 3M-5.2 3 5.2-3" /></g>
+            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(38 0) rotate(90)"><path d="M-5 2 0-7l5 9zM-6 2h12" /><circle cx="0" cy="-7" r="1.6" /></g>
+            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(0 38) rotate(180)"><path d="M0-7l4 5H2l4 6h-12l4-6h-2z" /></g>
+            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(-38 0) rotate(270)"><path d="M-5-2h10v8h-10zM-6-5h12v3h-12zM0-5v11" /></g>
+          </svg>
+          <p class="uc-motivos__cuenta"><span data-uc-cuenta>01</span><span class="uc-motivos__total"> / 04</span></p>
+        </div>
+        <ol class="uc-motivos__lista">
+          <li class="uc-motivo" data-uc-motivo>
+            <h2 class="uc-motivo__titulo">Copos de nieve</h2>
+            <p class="uc-motivo__texto">Una nevada que no se derrite.</p>
+          </li>
+          <li class="uc-motivo" data-uc-motivo>
+            <h2 class="uc-motivo__titulo">Papá Noel</h2>
+            <p class="uc-motivo__texto">De visita antes de Nochebuena.</p>
+          </li>
+          <li class="uc-motivo" data-uc-motivo>
+            <h2 class="uc-motivo__titulo">Árboles</h2>
+            <p class="uc-motivo__texto">Un bosque entero en la fachada.</p>
+          </li>
+          <li class="uc-motivo" data-uc-motivo>
+            <h2 class="uc-motivo__titulo">Regalos</h2>
+            <p class="uc-motivo__texto">La ilusión, antes de abrirlos.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  {%- comment -%} Escenas de uso a pantalla completa {%- endcomment -%}
+  <section class="uc-usos" data-uc-usos aria-label="Dónde usarlo">
+    <div class="uc-usos__marco" data-uc-usos-marco>
+      {%- assign escenas = 'salon,fachada,ninos' | split: ',' -%}
+      {%- for id in escenas -%}
+        {%- liquid
+          assign k_img = 'imagen_' | append: id
+          assign k_vid = 'video_' | append: id
+          assign img = section.settings[k_img]
+          assign vid = section.settings[k_vid]
+          case id
+            when 'salon'
+              assign eyebrow = 'En el salón'
+              assign titulo = 'Junto al árbol, la luz más cálida.'
+              assign texto = 'Apúntalo al techo y la cena de Nochebuena tendrá otro ambiente.'
+            when 'fachada'
+              assign eyebrow = 'En la fachada'
+              assign titulo = 'Que se vea desde la calle.'
+              assign texto = 'Es resistente al agua, así que también puedes usarlo fuera.'
+            when 'ninos'
+              assign eyebrow = 'Con los peques'
+              assign titulo = 'Cada copo, un juego.'
+              assign texto = 'Lo persiguen por la pared, intentan atraparlo y vuelven a empezar.'
+          endcase
+        -%}
+        <article
+          class="uc-uso"
+          data-scene="{{ id }}"
+          data-uc-uso
+          {% if img == blank %}data-poster-asset="escena-{{ id }}.jpg"{% endif %}
+          {% if vid == blank %}data-video-asset="escena-{{ id }}.mp4"{% endif %}
+        >
+          <div class="uc-uso__mascara" data-uc-mascara>
+            <div class="uc-uso__contra" data-uc-contra>
+              <div class="uc-uso__media" data-uc-media>
+                <div class="uc-uso__fondo uc-uso__fondo--{{ id }}" aria-hidden="true">
+                  {%- render 'utilsla-cine-fondo', escena: id -%}
+                </div>
+                {%- if img != blank -%}
+                  {{
+                    img
+                    | image_url: width: 2400
+                    | image_tag:
+                      widths: '750, 1100, 1500, 1920, 2400',
+                      sizes: '100vw',
+                      loading: 'lazy',
+                      class: 'uc-uso__img is-cargada',
+                      alt: img.alt | default: titulo
+                  }}
+                {%- endif -%}
+                {%- if vid != blank -%}
+                  {%- liquid
+                    assign src_hd = ''
+                    assign src_sd = ''
+                    assign alto_hd = 0
+                    assign alto_sd = 0
+                    for fuente in vid.sources
+                      if fuente.mime_type == 'video/mp4'
+                        if fuente.height <= 1080 and fuente.height > alto_hd
+                          assign alto_hd = fuente.height
+                          assign src_hd = fuente.url
+                        endif
+                        if fuente.height <= 720 and fuente.height > alto_sd
+                          assign alto_sd = fuente.height
+                          assign src_sd = fuente.url
+                        endif
+                      endif
+                    endfor
+                    if src_sd == ''
+                      assign src_sd = src_hd
+                    endif
+                  -%}
+                  <video
+                    class="uc-uso__video"
+                    data-uc-video
+                    data-src-hd="{{ src_hd }}"
+                    data-src-sd="{{ src_sd }}"
+                    data-poster="{{ vid.preview_image | image_url: width: 1600 }}"
+                    muted
+                    loop
+                    playsinline
+                    preload="none"
+                    aria-hidden="true"
+                  ></video>
+                {%- endif -%}
+                <span class="uc-uso__velo" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+          <div class="uc-uso__texto">
+            <p class="uc-eyebrow"><span class="uc-m"><span class="uc-m__in" data-uc-uso-linea>{{ eyebrow }}</span></span></p>
+            <h2 class="uc-uso__titulo"><span class="uc-m"><span class="uc-m__in" data-uc-uso-linea>{{ titulo }}</span></span></h2>
+            <p class="uc-uso__parrafo"><span class="uc-m"><span class="uc-m__in" data-uc-uso-linea>{{ texto }}</span></span></p>
+          </div>
+          {%- if request.design_mode and img == blank and vid == blank -%}
+            <p class="uc-uso__aviso">Escena «{{ id }}»: elige imagen o vídeo en los ajustes, o sube assets/escena-{{ id }}.jpg y .mp4</p>
+          {%- endif -%}
+        </article>
+      {%- endfor -%}
+    </div>
+  </section>
+
+  {%- comment -%} Cómo se usa {%- endcomment -%}
+  <section class="uc-pasos" data-uc-pasos aria-labelledby="uc-pasos-titulo-{{ section.id }}">
+    <div class="uc-contenedor">
+      <p class="uc-eyebrow uc-eyebrow--oscuro">Cómo se usa</p>
+      <h2 class="uc-h2" id="uc-pasos-titulo-{{ section.id }}" data-uc-lineas>Tres gestos y listo.</h2>
+      <ol class="uc-pasos__lista">
+        <li class="uc-paso" data-uc-paso="usb">
+          <svg class="uc-paso__icono" viewBox="0 0 96 64" aria-hidden="true">
+            <rect class="uc-paso__trazo" x="58" y="18" width="30" height="28" rx="5" />
+            <rect class="uc-paso__trazo" x="64" y="27" width="18" height="10" rx="1.5" />
+            <g data-uc-anim="enchufe">
+              <path class="uc-paso__trazo" d="M4 32h22" />
+              <rect class="uc-paso__trazo" x="26" y="24" width="18" height="16" rx="3" />
+              <rect class="uc-paso__relleno" x="44" y="28" width="14" height="8" rx="1" />
+            </g>
+          </svg>
+          <span class="uc-paso__num" aria-hidden="true">1</span>
+          <h3 class="uc-paso__titulo">Enchúfalo</h3>
+          <p class="uc-paso__texto">A cualquier cargador USB.</p>
+        </li>
+        <li class="uc-paso" data-uc-paso="orienta">
+          <svg class="uc-paso__icono" viewBox="0 0 96 64" aria-hidden="true">
+            <path class="uc-paso__trazo uc-paso__trazo--suave" d="M8 8h80" />
+            <g data-uc-anim="orienta" style="transform-origin: 48px 52px">
+              <rect class="uc-paso__trazo" x="34" y="30" width="28" height="24" rx="10" />
+              <ellipse class="uc-paso__trazo" cx="48" cy="30" rx="10" ry="4" />
+              <path class="uc-paso__trazo uc-paso__trazo--suave" d="M42 24 30 10M54 24l12-14" />
+            </g>
+          </svg>
+          <span class="uc-paso__num" aria-hidden="true">2</span>
+          <h3 class="uc-paso__titulo">Oriéntalo</h3>
+          <p class="uc-paso__texto">Hacia la pared, la fachada o el techo.</p>
+        </li>
+        <li class="uc-paso" data-uc-paso="listo">
+          <svg class="uc-paso__icono" viewBox="0 0 96 64" aria-hidden="true">
+            <g data-uc-anim="rayos" style="transform-origin: 48px 34px">
+              <path class="uc-paso__trazo uc-paso__trazo--luz" d="M48 6v8M48 54v8M20 34h8M68 34h8M28 14l6 6M68 14l-6 6M28 54l6-6M68 54l-6-6" />
+            </g>
+            <path class="uc-paso__trazo" d="M48 22v24M37.6 28l20.8 12M37.6 40l20.8-12" />
+          </svg>
+          <span class="uc-paso__num" aria-hidden="true">3</span>
+          <h3 class="uc-paso__titulo">Listo</h3>
+          <p class="uc-paso__texto">En un minuto, la Navidad encendida.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  {%- comment -%} Packs reales del producto {%- endcomment -%}
+  <section class="uc-packs" id="uc-packs-{{ section.id }}" data-uc-packs aria-labelledby="uc-packs-titulo-{{ section.id }}">
+    <div class="uc-contenedor uc-packs__rejilla">
+      <div class="uc-packs__intro">
+        <p class="uc-eyebrow uc-eyebrow--oscuro">Packs</p>
+        <h2 class="uc-h2" id="uc-packs-titulo-{{ section.id }}" data-uc-lineas>Elige tu pack.</h2>
+        <p class="uc-packs__lead">Uno para el salón, otro para la fachada y uno para regalar.</p>
+        <ul class="uc-confianza">
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></svg>
+            Envío gratis a España, Francia y Alemania
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
+            14 días de devolución
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+            Pago seguro
+          </li>
+        </ul>
+      </div>
+
+      {%- if hay_producto -%}
+        {%- render 'utilsla-packs', producto: p, recomendado: recomendado -%}
+      {%- elsif request.design_mode -%}
+        <p class="uc-packs__aviso">Elige en los ajustes de la sección un producto publicado en el canal Tienda online para mostrar los packs.</p>
+      {%- endif -%}
+    </div>
+  </section>
+
+  {%- comment -%} Cierre {%- endcomment -%}
+  <section class="uc-final" data-uc-final aria-labelledby="uc-final-titulo-{{ section.id }}">
+    <span class="uc-final__copos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+    <div class="uc-contenedor uc-final__centro">
+      <h2 class="uc-final__titulo" id="uc-final-titulo-{{ section.id }}" data-uc-lineas>Esta Navidad, enciende tu casa.</h2>
+      {%- if hay_producto -%}
+        <a class="uc-btn uc-btn--luz" href="#uc-packs-{{ section.id }}" data-uc-ancla>
+          <span>Elegir pack</span>
+          <svg class="uc-btn__flecha" viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" /></svg>
+        </a>
+      {%- endif -%}
+    </div>
+  </section>
+
+  {%- if hay_producto and p.available -%}
+    <div class="uc-fijo" data-uc-fijo>
+      <p class="uc-fijo__info">
+        <span class="uc-fijo__nombre" data-uc-fijo-nombre>{{ v_sel.title }}</span>
+        <strong class="uc-fijo__precio" data-uc-fijo-precio>{{ v_sel.price | money }}</strong>
+      </p>
+      <button type="button" class="uc-btn uc-btn--luz uc-fijo__boton" data-uc-fijo-boton tabindex="-1">Añadir al carrito</button>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "UtilsLA cine",
+  "tag": "div",
+  "class": "uc-seccion",
+  "settings": [
+    { "type": "product", "id": "product", "label": "Producto" },
+    { "type": "number", "id": "pack_recomendado", "label": "Pack recomendado (posición de la variante)", "default": 2 },
+    { "type": "inline_richtext", "id": "titulo", "label": "Título", "default": "La Navidad, <em>proyectada</em> en tu casa." },
+    { "type": "text", "id": "subtitulo", "label": "Subtítulo", "default": "Copos de nieve y figuras navideñas sobre paredes, fachadas y techos. Se enchufa por USB y está listo en un minuto." },
+    { "type": "checkbox", "id": "mostrar_carga", "label": "Pantalla de carga", "default": true },
+    { "type": "header", "content": "Tipografía" },
+    { "type": "font_picker", "id": "fuente_titulos", "label": "Titulares", "default": "bodoni_moda_n4" },
+    { "type": "font_picker", "id": "fuente_texto", "label": "Texto", "default": "instrument_sans_n4" },
+    { "type": "header", "content": "Proyector" },
+    { "type": "image_picker", "id": "imagen_proyector", "label": "Imagen del proyector", "info": "PNG con fondo transparente. También puedes subir assets/proyector.png." },
+    { "type": "header", "content": "Escena: salón" },
+    { "type": "image_picker", "id": "imagen_salon", "label": "Imagen" },
+    { "type": "video", "id": "video_salon", "label": "Vídeo" },
+    { "type": "header", "content": "Escena: fachada" },
+    { "type": "image_picker", "id": "imagen_fachada", "label": "Imagen" },
+    { "type": "video", "id": "video_fachada", "label": "Vídeo" },
+    { "type": "header", "content": "Escena: niños" },
+    { "type": "image_picker", "id": "imagen_ninos", "label": "Imagen" },
+    { "type": "video", "id": "video_ninos", "label": "Vídeo" }
+  ],
+  "presets": [{ "name": "UtilsLA cine" }]
+}
+{% endschema %}
