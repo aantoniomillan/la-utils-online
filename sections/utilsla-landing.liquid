@@ -177,7 +177,7 @@
         </dl>
         <div class="ul-accion">
           <a class="ul-btn" href="#ul-comprar">Elegir pack</a>
-          <p class="ul-desde">Desde <strong>{{ minUnidad | money }}</strong> por unidad</p>
+          {%- if p.id != blank -%}<p class="ul-desde">Desde <strong>{{ minUnidad | money }}</strong> por unidad</p>{%- endif -%}
         </div>
         <ul class="ul-confianza">
           <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>Envío gratis a España, Francia y Alemania</li>
@@ -185,7 +185,7 @@
         </ul>
       </div>
       <div class="ul-escena">
-        {%- if p.featured_image -%}
+        {%- if p.images.size > 0 -%}
           {{ p.featured_image | image_url: width: 1000 | image_tag: loading: 'eager', fetchpriority: 'high', alt: p.featured_image.alt | default: p.title, sizes: '(max-width: 860px) 90vw, 480px' }}
         {%- else -%}
           {{ escena }}
@@ -194,11 +194,16 @@
     </div>
   </section>
 
+  {%- if p.id == blank -%}
+    {%- if request.design_mode -%}
+      <section class="ul-compra" id="ul-comprar"><div class="ul-wrap"><p class="ul-nota">Elige en los ajustes de la sección un producto publicado en el canal Tienda online.</p></div></section>
+    {%- endif -%}
+  {%- else -%}
   <section class="ul-compra" id="ul-comprar">
     <div class="ul-wrap">
       <div class="ul-galeria">
         <div class="ul-principal">
-          {%- if p.featured_image -%}
+          {%- if p.images.size > 0 -%}
             {{ p.featured_image | image_url: width: 1100 | image_tag: loading: 'lazy', alt: p.title, class: 'ul-img-principal', sizes: '(max-width: 860px) 92vw, 520px' }}
           {%- else -%}
             <div style="position:relative;width:100%;height:100%">{{ escena }}</div>
@@ -257,6 +262,8 @@
     </div>
   </section>
 
+  {%- endif -%}
+
   <section class="ul-pasos">
     <div class="ul-wrap">
       <h2>Cómo funciona</h2>
@@ -279,10 +286,12 @@
     </div>
   </section>
 
+  {%- if p.id != blank -%}
   <div class="ul-barra" aria-hidden="true">
     <p><strong>{{ p.title }}</strong>Desde {{ minUnidad | money }} por unidad</p>
     <a class="ul-btn" href="#ul-comprar" tabindex="-1">Comprar</a>
   </div>
+  {%- endif -%}
 </div>
 
 <script>
