@@ -1,0 +1,86 @@
+{%- comment -%} UtilsLA · Pie con el estilo de la portada. {%- endcomment -%}
+
+{%- assign menu = section.settings.menu -%}
+<div class="ucx ucx-pie">
+  <div class="uc-contenedor">
+    <div class="ucx-pie__arriba">
+      <div class="ucx-pie__marca">
+        <p class="ucx-pie__nombre">{{ shop.name }}</p>
+        {%- if section.settings.lema != blank -%}
+          <p class="ucx-pie__lema">{{ section.settings.lema }}</p>
+        {%- endif -%}
+      </div>
+
+      <ul class="ucx-pie__confianza">
+        <li>Envío gratis a España, Francia y Alemania</li>
+        <li>14 días de devolución</li>
+        <li>Pago seguro</li>
+      </ul>
+    </div>
+
+    <div class="ucx-pie__columnas">
+      {%- if menu.links.size > 0 -%}
+        <nav class="ucx-pie__col" aria-label="Pie">
+          <p class="uc-eyebrow">Tienda</p>
+          <ul>
+            {%- for link in menu.links -%}
+              <li><a href="{{ link.url }}">{{ link.title }}</a></li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+      {%- liquid
+        assign politicas = ''
+        for politica in shop.policies
+          if politica != blank
+            assign politicas = politicas | append: politica.title
+          endif
+        endfor
+      -%}
+      {%- if politicas != '' -%}
+        <nav class="ucx-pie__col" aria-label="Políticas">
+          <p class="uc-eyebrow">Información</p>
+          <ul>
+            {%- for politica in shop.policies -%}
+              {%- if politica != blank -%}
+                <li><a href="{{ politica.url }}">{{ politica.title }}</a></li>
+              {%- endif -%}
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+
+      <div class="ucx-pie__col">
+        <p class="uc-eyebrow">Ayuda</p>
+        <ul>
+          <li><a href="{% if routes.root_url == '/' %}/pages/contact{% else %}{{ routes.root_url }}/pages/contact{% endif %}">Contacto</a></li>
+          <li><a href="{{ routes.cart_url }}">Carrito</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="ucx-pie__abajo">
+      <p>© {{ 'now' | date: '%Y' }} {{ shop.name }}</p>
+      {%- if shop.enabled_payment_types.size > 0 -%}
+        <ul class="ucx-pie__pagos" aria-label="Medios de pago">
+          {%- for tipo in shop.enabled_payment_types -%}
+            <li>{{ tipo | payment_type_svg_tag: class: 'ucx-pie__pago' }}</li>
+          {%- endfor -%}
+        </ul>
+      {%- endif -%}
+    </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "UtilsLA pie",
+  "tag": "div",
+  "class": "ucx-pie-seccion",
+  "settings": [
+    { "type": "text", "id": "lema", "label": "Lema", "default": "La Navidad, proyectada en tu casa." },
+    { "type": "link_list", "id": "menu", "label": "Menú", "default": "footer" }
+  ]
+}
+{% endschema %}
