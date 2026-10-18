@@ -6,7 +6,10 @@
     1. La imagen o el vídeo elegidos en el editor de temas (ajustes de la sección).
     2. Los archivos assets/escena-<id>.jpg y assets/escena-<id>.mp4, si existen.
     3. El fondo provisional dibujado en SVG.
-  Imagen del proyector: ajuste "Imagen del proyector" o assets/proyector.png (PNG con fondo transparente).
+  Proyector: modelo 3D (assets/utilsla-proyector3d.js, three.js). Si existe assets/proyector.glb se carga; si no, se
+  construye por código. En móviles lentos o sin WebGL se usa la imagen: ajuste "Imagen del proyector" o assets/proyector.png.
+  Motivos de la proyección: assets/motivo-copo.png, -santa, -arbol, -regalo, -estrella, -baston (blanco sobre transparente);
+  si no existen se dibujan en canvas.
 {%- endcomment -%}
 
 {%- liquid
@@ -110,11 +113,18 @@
 
   <div class="uc-progreso" aria-hidden="true"><span data-uc-progreso></span></div>
 
-  {%- comment -%} Escenario: hero + pared de efectos (se fija al hacer scroll) {%- endcomment -%}
+  {%- comment -%}
+    Escenario único fijado: hero → proyector a un lado + proyección → escenas de uso.
+    Todo ocurre dentro de un solo marco fijado, así que entre las partes no hay cortes ni cortinas.
+  {%- endcomment -%}
   <section class="uc-escenario" data-uc-escenario aria-label="Proyector de luces navideñas">
     <div class="uc-marco" data-uc-marco>
-      <canvas class="uc-pared" data-uc-pared aria-hidden="true"></canvas>
       <div class="uc-halo" data-uc-halo aria-hidden="true"></div>
+
+      <div class="uc-proy" data-uc-proy aria-hidden="true">
+        <canvas class="uc-proy__lienzo" data-uc-proy-lienzo></canvas>
+      </div>
+      <div class="uc-rayo" data-uc-rayo aria-hidden="true"></div>
 
       <div class="uc-hero">
         <p class="uc-eyebrow" data-uc-intro>UtilsLA · Proyector de luces navideñas</p>
@@ -132,8 +142,14 @@
         <p class="uc-desliza" data-uc-intro data-uc-desliza><span class="uc-desliza__linea" aria-hidden="true"></span>Desliza para descubrir</p>
       </div>
 
+      <canvas
+        class="uc-3d"
+        data-uc-3d
+        data-three="{{ 'utilsla-proyector3d.js' | asset_url }}"
+        aria-hidden="true"
+      ></canvas>
+
       <div class="uc-proyector" data-uc-proyector>
-        <div class="uc-haz" data-uc-haz aria-hidden="true"><span class="uc-haz__color"></span></div>
         <span class="uc-lente-brillo" data-uc-lente aria-hidden="true"></span>
         {%- if section.settings.imagen_proyector != blank -%}
           {{
@@ -141,7 +157,7 @@
             | image_url: width: 600
             | image_tag:
               widths: '240, 360, 480, 600',
-              sizes: '(min-width: 990px) 180px, 140px',
+              sizes: '(min-width: 990px) 220px, 150px',
               loading: 'eager',
               class: 'uc-proyector__img',
               alt: p.title
@@ -169,17 +185,6 @@
 
       <div class="uc-motivos" data-uc-motivos>
         <p class="uc-eyebrow uc-motivos__eyebrow">Lo que verás en la pared</p>
-        <div class="uc-motivos__cabecera" aria-hidden="true">
-          <svg class="uc-disco" data-uc-disco viewBox="-50 -50 100 100">
-            <circle r="46" class="uc-disco__aro" />
-            <circle r="30" class="uc-disco__aro uc-disco__aro--fino" />
-            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(0 -38)"><path d="M0-6V6M-5.2-3 5.2 3M-5.2 3 5.2-3" /></g>
-            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(38 0) rotate(90)"><path d="M-5 2 0-7l5 9zM-6 2h12" /><circle cx="0" cy="-7" r="1.6" /></g>
-            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(0 38) rotate(180)"><path d="M0-7l4 5H2l4 6h-12l4-6h-2z" /></g>
-            <g class="uc-disco__icono" data-uc-disco-icono transform="translate(-38 0) rotate(270)"><path d="M-5-2h10v8h-10zM-6-5h12v3h-12zM0-5v11" /></g>
-          </svg>
-          <p class="uc-motivos__cuenta"><span data-uc-cuenta>01</span><span class="uc-motivos__total"> / 04</span></p>
-        </div>
         <ol class="uc-motivos__lista">
           <li class="uc-motivo" data-uc-motivo>
             <h2 class="uc-motivo__titulo">Copos de nieve</h2>
@@ -197,14 +202,51 @@
             <h2 class="uc-motivo__titulo">Regalos</h2>
             <p class="uc-motivo__texto">La ilusión, antes de abrirlos.</p>
           </li>
+          <li class="uc-motivo" data-uc-motivo>
+            <h2 class="uc-motivo__titulo">Estrellas</h2>
+            <p class="uc-motivo__texto">Un cielo de Navidad en el techo.</p>
+          </li>
+          <li class="uc-motivo" data-uc-motivo>
+            <h2 class="uc-motivo__titulo">Bastones</h2>
+            <p class="uc-motivo__texto">Rayas de caramelo por toda la pared.</p>
+          </li>
         </ol>
       </div>
-    </div>
-  </section>
 
-  {%- comment -%} Escenas de uso a pantalla completa {%- endcomment -%}
-  <section class="uc-usos" data-uc-usos aria-label="Dónde usarlo">
-    <div class="uc-usos__marco" data-uc-usos-marco>
+      <div class="uc-ctl" data-uc-ctl role="group" aria-label="Controles de la proyección">
+        <div class="uc-ctl__fila uc-ctl__nav">
+          <button type="button" class="uc-ctl__btn" data-uc-prev aria-label="Efecto anterior">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" /></svg>
+          </button>
+          <p class="uc-ctl__estado" aria-live="polite"><span data-uc-nombre>Copos de nieve</span><span class="uc-ctl__cuenta"><span data-uc-cuenta>01</span> / 06</span></p>
+          <button type="button" class="uc-ctl__btn" data-uc-next aria-label="Efecto siguiente">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7.5 4 6 6-6 6" /></svg>
+          </button>
+        </div>
+        <div class="uc-ctl__fila uc-ctl__ajustes">
+          <button type="button" class="uc-ctl__btn uc-ctl__giro" data-uc-giro aria-pressed="true" aria-label="Parar el giro de la proyección">
+            <svg class="uc-ctl__i-parar" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 5v10M13 5v10" /></svg>
+            <svg class="uc-ctl__i-girar" viewBox="0 0 20 20" aria-hidden="true"><path d="M7 4.5v11l9-5.5z" /></svg>
+          </button>
+          <div class="uc-ctl__grupo" role="group" aria-label="Velocidad">
+            <button type="button" class="uc-ctl__chip" data-uc-vel="0.5" aria-pressed="false" aria-label="Velocidad lenta">0,5×</button>
+            <button type="button" class="uc-ctl__chip" data-uc-vel="1" aria-pressed="true" aria-label="Velocidad normal">1×</button>
+            <button type="button" class="uc-ctl__chip" data-uc-vel="2" aria-pressed="false" aria-label="Velocidad rápida">2×</button>
+          </div>
+        </div>
+        <div class="uc-ctl__fila uc-ctl__colores" role="group" aria-label="Color de la luz">
+          <button type="button" class="uc-ctl__color uc-ctl__color--multi" data-uc-color="multi" aria-pressed="true" aria-label="Multicolor"></button>
+          <button type="button" class="uc-ctl__color uc-ctl__color--calido" data-uc-color="calido" aria-pressed="false" aria-label="Blanco cálido"></button>
+          <button type="button" class="uc-ctl__color uc-ctl__color--rojo" data-uc-color="rojo" aria-pressed="false" aria-label="Rojo"></button>
+          <button type="button" class="uc-ctl__color uc-ctl__color--verde" data-uc-color="verde" aria-pressed="false" aria-label="Verde"></button>
+          <button type="button" class="uc-ctl__color uc-ctl__color--azul" data-uc-color="azul" aria-pressed="false" aria-label="Azul"></button>
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} Escenas de uso: cada una entra con zoom o paso de cámara dentro del mismo marco fijado {%- endcomment -%}
+    <section class="uc-usos" data-uc-usos aria-label="Dónde usarlo">
+      <div class="uc-usos__marco" data-uc-usos-marco>
       {%- assign escenas = 'salon,fachada,ninos' | split: ',' -%}
       {%- for id in escenas -%}
         {%- liquid
@@ -301,8 +343,11 @@
           {%- endif -%}
         </article>
       {%- endfor -%}
-    </div>
+        <span class="uc-usos__velo" data-uc-velo aria-hidden="true"></span>
+      </div>
+    </section>
   </section>
+
 
   {%- comment -%} Cómo se usa {%- endcomment -%}
   <section class="uc-pasos" data-uc-pasos aria-labelledby="uc-pasos-titulo-{{ section.id }}">
@@ -385,6 +430,7 @@
 
   {%- comment -%} Cierre {%- endcomment -%}
   <section class="uc-final" data-uc-final aria-labelledby="uc-final-titulo-{{ section.id }}">
+    <span class="uc-final__fondo" data-uc-final-fondo aria-hidden="true"></span>
     <span class="uc-final__copos" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
     <div class="uc-contenedor uc-final__centro">
       <h2 class="uc-final__titulo" id="uc-final-titulo-{{ section.id }}" data-uc-lineas>Esta Navidad, enciende tu casa.</h2>
