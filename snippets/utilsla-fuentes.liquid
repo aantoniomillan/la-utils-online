@@ -1,0 +1,25 @@
+{%- comment -%}
+  UtilsLA · Tipografía de titulares: Fraunces (serif cálida de trazo grueso), servida desde assets/ (sin Google Fonts).
+  Se pinta una sola vez desde la cabecera, que está en todas las páginas.
+{%- endcomment -%}
+{{ 'fraunces-600.woff2' | asset_url | preload_tag: as: 'font', type: 'font/woff2', crossorigin: '' }}
+<style>
+  @font-face {
+    font-family: 'Fraunces UL';
+    font-style: normal;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('{{ 'fraunces-600.woff2' | asset_url }}') format('woff2');
+  }
+  @font-face {
+    font-family: 'Fraunces UL';
+    font-style: italic;
+    font-weight: 400 700;
+    font-display: swap;
+    src: url('{{ 'fraunces-600-italic.woff2' | asset_url }}') format('woff2');
+  }
+  :root {
+    --ucx-f-tit: 'Fraunces UL', Georgia, 'Times New Roman', serif;
+    --uc-f-tit: var(--ucx-f-tit);
+  }
+</style>

@@ -2,10 +2,8 @@
   UtilsLA · Portada cinematográfica del proyector de luces navideñas.
   Marcado y datos. La animación vive en assets/utilsla-cine.js y el estilo en assets/utilsla-cine.css.
 
-  Escenas de uso: cada <article data-scene> busca, por este orden:
-    1. La imagen o el vídeo elegidos en el editor de temas (ajustes de la sección).
-    2. Los archivos assets/escena-<id>.jpg y assets/escena-<id>.mp4, si existen.
-    3. El fondo provisional dibujado en SVG.
+  Fotos: secuencia de 6 fotos a pantalla completa. Cada una usa la imagen elegida en el editor o, si no hay,
+  assets/escena-1.jpg ... assets/escena-6.jpg. Se precargan al abrir la página.
   Proyector: modelo 3D (assets/utilsla-proyector3d.js, three.js). Si existe assets/proyector.glb se carga; si no, se
   construye por código. En móviles lentos o sin WebGL se usa la imagen: ajuste "Imagen del proyector" o assets/proyector.png.
   Motivos de la proyección: assets/motivo-copo.png, -santa, -arbol, -regalo, -estrella, -baston (blanco sobre transparente);
@@ -45,8 +43,6 @@
 
   assign base_assets = 'utilsla-cine.css' | asset_url | split: 'utilsla-cine.css' | first
 
-  assign f_tit = section.settings.fuente_titulos
-  assign f_tit_it = f_tit | font_modify: 'style', 'italic'
   assign f_txt = section.settings.fuente_texto
   assign f_txt_med = f_txt | font_modify: 'weight', '500'
 
@@ -57,12 +53,9 @@
 -%}
 
 <style>
-  {{ f_tit | font_face: font_display: 'swap' }}
-  {{ f_tit_it | font_face: font_display: 'swap' }}
   {{ f_txt | font_face: font_display: 'swap' }}
   {{ f_txt_med | font_face: font_display: 'swap' }}
   #uc-{{ section.id }} {
-    --uc-f-tit: {{ f_tit.family }}, {{ f_tit.fallback_families }};
     --uc-f-txt: {{ f_txt.family }}, {{ f_txt.fallback_families }};
   }
 </style>
@@ -85,8 +78,6 @@
 
 <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
 <script src="{{ 'ScrollTrigger.min.js' | asset_url }}" defer></script>
-<script src="{{ 'SplitText.min.js' | asset_url }}" defer></script>
-<script src="{{ 'lenis.min.js' | asset_url }}" defer></script>
 <script src="{{ 'utilsla-cine.js' | asset_url }}" defer></script>
 
 <div
@@ -244,110 +235,53 @@
       </div>
     </div>
 
-    {%- comment -%} Escenas de uso: cada una entra con zoom o paso de cámara dentro del mismo marco fijado {%- endcomment -%}
-    <section class="uc-usos" data-uc-usos aria-label="Dónde usarlo">
-      <div class="uc-usos__marco" data-uc-usos-marco>
-      {%- assign escenas = 'salon,fachada,ninos' | split: ',' -%}
-      {%- for id in escenas -%}
-        {%- liquid
-          assign k_img = 'imagen_' | append: id
-          assign k_vid = 'video_' | append: id
-          assign img = section.settings[k_img]
-          assign vid = section.settings[k_vid]
-          case id
-            when 'salon'
-              assign eyebrow = 'En el salón'
-              assign titulo = 'Junto al árbol, la luz más cálida.'
-              assign texto = 'Apúntalo al techo y la cena de Nochebuena tendrá otro ambiente.'
-            when 'fachada'
-              assign eyebrow = 'En la fachada'
-              assign titulo = 'Que se vea desde la calle.'
-              assign texto = 'Es resistente al agua, así que también puedes usarlo fuera.'
-            when 'ninos'
-              assign eyebrow = 'Con los peques'
-              assign titulo = 'Cada copo, un juego.'
-              assign texto = 'Lo persiguen por la pared, intentan atraparlo y vuelven a empezar.'
-          endcase
-        -%}
-        <article
-          class="uc-uso"
-          data-scene="{{ id }}"
-          data-uc-uso
-          {% if img == blank %}data-poster-asset="escena-{{ id }}.jpg"{% endif %}
-          {% if vid == blank %}data-video-asset="escena-{{ id }}.mp4"{% endif %}
-        >
-          <div class="uc-uso__mascara" data-uc-mascara>
-            <div class="uc-uso__contra" data-uc-contra>
-              <div class="uc-uso__media" data-uc-media>
-                <div class="uc-uso__fondo uc-uso__fondo--{{ id }}" aria-hidden="true">
-                  {%- render 'utilsla-cine-fondo', escena: id -%}
+    {%- comment -%}
+      Secuencia de fotos a pantalla completa. Cada foto usa, por este orden: la imagen elegida en el editor
+      o assets/escena-N.jpg (N de 1 a 6). Si no hay ninguna, se ve un fondo oscuro con la frase.
+    {%- endcomment -%}
+    <section class="uc-fotos" data-uc-fotos aria-label="Momentos de Navidad en casa">
+      <div class="uc-fotos__marco" data-uc-fotos-marco>
+        {%- for n in (1..6) -%}
+          {%- liquid
+            assign k_img = 'imagen_' | append: n
+            assign k_txt = 'frase_' | append: n
+            assign img = section.settings[k_img]
+            assign frase = section.settings[k_txt]
+          -%}
+          <article class="uc-foto uc-foto--{{ n }}" data-uc-foto {% if img == blank %}data-asset="escena-{{ n }}.jpg"{% endif %}>
+            <div class="uc-foto__mascara" data-uc-mascara>
+              <div class="uc-foto__contra" data-uc-contra>
+                <div class="uc-foto__media" data-uc-foto-media>
+                  {%- if img != blank -%}
+                    {{
+                      img
+                      | image_url: width: 2000
+                      | image_tag:
+                        widths: '750, 1200, 1600, 2000',
+                        sizes: '100vw',
+                        loading: 'eager',
+                        decoding: 'async',
+                        class: 'uc-foto__img',
+                        alt: ''
+                    }}
+                  {%- endif -%}
                 </div>
-                {%- if img != blank -%}
-                  {{
-                    img
-                    | image_url: width: 2400
-                    | image_tag:
-                      widths: '750, 1100, 1500, 1920, 2400',
-                      sizes: '100vw',
-                      loading: 'lazy',
-                      class: 'uc-uso__img is-cargada',
-                      alt: img.alt | default: titulo
-                  }}
-                {%- endif -%}
-                {%- if vid != blank -%}
-                  {%- liquid
-                    assign src_hd = ''
-                    assign src_sd = ''
-                    assign alto_hd = 0
-                    assign alto_sd = 0
-                    for fuente in vid.sources
-                      if fuente.mime_type == 'video/mp4'
-                        if fuente.height <= 1080 and fuente.height > alto_hd
-                          assign alto_hd = fuente.height
-                          assign src_hd = fuente.url
-                        endif
-                        if fuente.height <= 720 and fuente.height > alto_sd
-                          assign alto_sd = fuente.height
-                          assign src_sd = fuente.url
-                        endif
-                      endif
-                    endfor
-                    if src_sd == ''
-                      assign src_sd = src_hd
-                    endif
-                  -%}
-                  <video
-                    class="uc-uso__video"
-                    data-uc-video
-                    data-src-hd="{{ src_hd }}"
-                    data-src-sd="{{ src_sd }}"
-                    data-poster="{{ vid.preview_image | image_url: width: 1600 }}"
-                    muted
-                    loop
-                    playsinline
-                    preload="none"
-                    aria-hidden="true"
-                  ></video>
-                {%- endif -%}
-                <span class="uc-uso__velo" aria-hidden="true"></span>
+                <span class="uc-foto__velo" aria-hidden="true"></span>
               </div>
             </div>
-          </div>
-          <div class="uc-uso__texto">
-            <p class="uc-eyebrow"><span class="uc-m"><span class="uc-m__in" data-uc-uso-linea>{{ eyebrow }}</span></span></p>
-            <h2 class="uc-uso__titulo"><span class="uc-m"><span class="uc-m__in" data-uc-uso-linea>{{ titulo }}</span></span></h2>
-            <p class="uc-uso__parrafo"><span class="uc-m"><span class="uc-m__in" data-uc-uso-linea>{{ texto }}</span></span></p>
-          </div>
-          {%- if request.design_mode and img == blank and vid == blank -%}
-            <p class="uc-uso__aviso">Escena «{{ id }}»: elige imagen o vídeo en los ajustes, o sube assets/escena-{{ id }}.jpg y .mp4</p>
-          {%- endif -%}
-        </article>
-      {%- endfor -%}
-        <span class="uc-usos__velo" data-uc-velo aria-hidden="true"></span>
+            <div class="uc-foto__texto">
+              <p class="uc-foto__num" aria-hidden="true">0{{ n }} / 06</p>
+              <p class="uc-foto__frase" data-uc-frase>{{ frase }}</p>
+            </div>
+            {%- if request.design_mode and img == blank -%}
+              <p class="uc-foto__aviso">Foto {{ n }}: elige una imagen en los ajustes o sube assets/escena-{{ n }}.jpg</p>
+            {%- endif -%}
+          </article>
+        {%- endfor -%}
+        <span class="uc-fotos__velo" data-uc-velo aria-hidden="true"></span>
       </div>
     </section>
   </section>
-
 
   {%- comment -%} Cómo se usa {%- endcomment -%}
   <section class="uc-pasos" data-uc-pasos aria-labelledby="uc-pasos-titulo-{{ section.id }}">
@@ -466,19 +400,27 @@
     { "type": "text", "id": "subtitulo", "label": "Subtítulo", "default": "Copos de nieve y figuras navideñas sobre paredes, fachadas y techos. Se enchufa por USB y está listo en un minuto." },
     { "type": "checkbox", "id": "mostrar_carga", "label": "Pantalla de carga", "default": true },
     { "type": "header", "content": "Tipografía" },
-    { "type": "font_picker", "id": "fuente_titulos", "label": "Titulares", "default": "bodoni_moda_n4" },
     { "type": "font_picker", "id": "fuente_texto", "label": "Texto", "default": "instrument_sans_n4" },
     { "type": "header", "content": "Proyector" },
     { "type": "image_picker", "id": "imagen_proyector", "label": "Imagen del proyector", "info": "PNG con fondo transparente. También puedes subir assets/proyector.png." },
-    { "type": "header", "content": "Escena: salón" },
-    { "type": "image_picker", "id": "imagen_salon", "label": "Imagen" },
-    { "type": "video", "id": "video_salon", "label": "Vídeo" },
-    { "type": "header", "content": "Escena: fachada" },
-    { "type": "image_picker", "id": "imagen_fachada", "label": "Imagen" },
-    { "type": "video", "id": "video_fachada", "label": "Vídeo" },
-    { "type": "header", "content": "Escena: niños" },
-    { "type": "image_picker", "id": "imagen_ninos", "label": "Imagen" },
-    { "type": "video", "id": "video_ninos", "label": "Vídeo" }
+    { "type": "header", "content": "Foto 1" },
+    { "type": "image_picker", "id": "imagen_1", "label": "Imagen", "info": "O sube assets/escena-1.jpg" },
+    { "type": "text", "id": "frase_1", "label": "Frase", "default": "Una noche de salón, con el árbol encendido." },
+    { "type": "header", "content": "Foto 2" },
+    { "type": "image_picker", "id": "imagen_2", "label": "Imagen", "info": "O sube assets/escena-2.jpg" },
+    { "type": "text", "id": "frase_2", "label": "Frase", "default": "La fachada se llena de nieve que no se derrite." },
+    { "type": "header", "content": "Foto 3" },
+    { "type": "image_picker", "id": "imagen_3", "label": "Imagen", "info": "O sube assets/escena-3.jpg" },
+    { "type": "text", "id": "frase_3", "label": "Frase", "default": "Los regalos brillan antes de abrirse." },
+    { "type": "header", "content": "Foto 4" },
+    { "type": "image_picker", "id": "imagen_4", "label": "Imagen", "info": "O sube assets/escena-4.jpg" },
+    { "type": "text", "id": "frase_4", "label": "Frase", "default": "Noche en casa, con la luz de la Navidad." },
+    { "type": "header", "content": "Foto 5" },
+    { "type": "image_picker", "id": "imagen_5", "label": "Imagen", "info": "O sube assets/escena-5.jpg" },
+    { "type": "text", "id": "frase_5", "label": "Frase", "default": "Los peques persiguen cada copo por la pared." },
+    { "type": "header", "content": "Foto 6" },
+    { "type": "image_picker", "id": "imagen_6", "label": "Imagen", "info": "O sube assets/escena-6.jpg" },
+    { "type": "text", "id": "frase_6", "label": "Frase", "default": "La cena de Nochebuena, con otro ambiente." }
   ],
   "presets": [{ "name": "UtilsLA cine" }]
 }

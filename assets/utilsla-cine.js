@@ -1,5 +1,5 @@
 /* UtilsLA · Portada cinematográfica del proyector.
-   GSAP + ScrollTrigger + SplitText + Lenis (servidos desde assets/) y three.js (assets/utilsla-proyector3d.js). Lenis va conducido por gsap.ticker y avisa a ScrollTrigger.
+   GSAP + ScrollTrigger (servidos desde assets/) y three.js (assets/utilsla-proyector3d.js). Scroll nativo: la ventana es el único contenedor de scroll (el CSS lo fuerza en escritorio).
    En el diseño "squeeze" de Horizon (≥990px) el scroll vive en .page-wrapper; en móvil, en la ventana. */
 (() => {
   'use strict';
@@ -15,15 +15,6 @@
     return t * t * (3 - 2 * t);
   };
   const altoCabecera = () => parseFloat(getComputedStyle(document.body).getPropertyValue('--header-height')) || 0;
-
-  function scrollerActual() {
-    const envoltorio = document.querySelector('.page-wrapper');
-    if (envoltorio && window.matchMedia('(min-width: 990px)').matches) {
-      const oy = getComputedStyle(envoltorio).overflowY;
-      if (oy === 'auto' || oy === 'scroll') return envoltorio;
-    }
-    return window;
-  }
 
   /* Formatea céntimos con el mismo aspecto que el filtro money de la tienda ("€10,00" o "10,00 €"). */
   function formatearComo(plantilla, centimos) {
@@ -397,108 +388,47 @@
     return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`;
   }
 
-  /* ---------------------------------------------------------------- Medios de las escenas */
+  /* ---------------------------------------------------------------- Fotos de la secuencia (precargadas) */
 
-  function prepararMedios(raiz, base, alCargar) {
-    const escenas = qa(raiz, '[data-uc-uso]');
-    const anchoPantalla = () => window.innerWidth * Math.min(window.devicePixelRatio || 1, 2);
-
-    function cargarImagen(escena) {
-      const archivo = escena.dataset.posterAsset;
-      if (!archivo || escena.dataset.posterIntentado) return;
-      escena.dataset.posterIntentado = '1';
-      const url = base + archivo;
-      const img = new Image();
-      img.decoding = 'async';
-      img.alt = '';
-      img.className = 'uc-uso__img';
-      img.sizes = '100vw';
-      img.srcset = [750, 1100, 1500, 1920, 2400].map((w) => `${url}?width=${w} ${w}w`).join(', ');
-      img.onload = () => {
-        q(escena, '[data-uc-media]').insertBefore(img, q(escena, '.uc-uso__velo'));
-        requestAnimationFrame(() => img.classList.add('is-cargada'));
-        alCargar();
-      };
-      img.src = url + '?width=' + (anchoPantalla() > 1500 ? 1920 : 1100);
-    }
-
-    function activarVideo(escena) {
-      if (consultaReducida.matches) return;
-      let video = q(escena, '[data-uc-video]');
-      if (video && !video.src) {
-        const sd = window.innerWidth < 750;
-        if (video.dataset.poster) video.poster = video.dataset.poster;
-        video.preload = 'metadata';
-        video.src = (sd ? video.dataset.srcSd : video.dataset.srcHd) || video.dataset.srcHd;
-        video.addEventListener('loadeddata', () => video.classList.add('is-cargada'), { once: true });
-      } else if (!video && escena.dataset.videoAsset && !escena.dataset.videoIntentado) {
-        escena.dataset.videoIntentado = '1';
-        video = document.createElement('video');
-        Object.assign(video, { muted: true, loop: true, playsInline: true, preload: 'metadata' });
-        video.setAttribute('muted', '');
-        video.setAttribute('playsinline', '');
-        video.setAttribute('aria-hidden', 'true');
-        video.className = 'uc-uso__video';
-        video.dataset.ucVideo = '';
-        video.addEventListener(
-          'loadeddata',
-          () => {
-            video.classList.add('is-cargada');
-            if (escena.dataset.activa === '1') video.play().catch(() => {});
-          },
-          { once: true }
-        );
-        video.addEventListener('error', () => video.remove(), { once: true });
-        video.src = base + escena.dataset.videoAsset;
-        q(escena, '[data-uc-media]').insertBefore(video, q(escena, '.uc-uso__velo'));
-      }
-      return video;
-    }
-
-    function fijarActiva(indice) {
-      escenas.forEach((escena, i) => {
-        const activa = i === indice;
-        escena.dataset.activa = activa ? '1' : '0';
-        if (activa || i === indice + 1) activarVideo(escena);
-        const video = q(escena, '[data-uc-video]');
-        if (!video || !video.src) return;
-        if (activa && !consultaReducida.matches) video.play().catch(() => {});
-        else video.pause();
-      });
-    }
-
-    const io = new IntersectionObserver(
-      (entradas) => {
-        entradas.forEach((e) => {
-          if (!e.isIntersecting) return;
-          cargarImagen(e.target);
-          io.unobserve(e.target);
-        });
-      },
-      { rootMargin: '100% 0px' }
+  /* Usa la imagen elegida en el editor o assets/escena-N.jpg. Devuelve una promesa que se resuelve cuando todas han intentado cargar. */
+  function prepararFotos(raiz, base) {
+    const fotos = qa(raiz, '[data-uc-foto]');
+    const ancho = window.innerWidth * Math.min(window.devicePixelRatio || 1, 2) > 1500 ? 1920 : 1200;
+    const cargas = fotos.map(
+      (foto) =>
+        new Promise((resolver) => {
+          const media = q(foto, '[data-uc-foto-media]');
+          const marcada = q(foto, 'img');
+          const listo = (img) => {
+            img.classList.add('is-cargada');
+            foto.classList.add('tiene-foto');
+            resolver(true);
+          };
+          if (marcada) {
+            if (marcada.complete && marcada.naturalWidth) listo(marcada);
+            else {
+              marcada.addEventListener('load', () => listo(marcada), { once: true });
+              marcada.addEventListener('error', () => resolver(false), { once: true });
+            }
+            return;
+          }
+          if (!foto.dataset.asset) return resolver(false);
+          const url = base + foto.dataset.asset;
+          const img = new Image();
+          img.decoding = 'async';
+          img.alt = '';
+          img.className = 'uc-foto__img';
+          img.sizes = '100vw';
+          img.srcset = [750, 1200, 1920].map((w) => `${url}?width=${w} ${w}w`).join(', ');
+          img.onload = () => {
+            media.appendChild(img);
+            requestAnimationFrame(() => listo(img));
+          };
+          img.onerror = () => resolver(false);
+          img.src = `${url}?width=${ancho}`;
+        })
     );
-    escenas.forEach((e) => io.observe(e));
-
-    // Sin escena fijada (movimiento reducido): cada escena se activa al verse.
-    const ioVisible = new IntersectionObserver(
-      (entradas) => {
-        entradas.forEach((e) => {
-          if (e.isIntersecting && e.intersectionRatio > 0.4) fijarActiva(escenas.indexOf(e.target));
-        });
-      },
-      { threshold: [0, 0.4] }
-    );
-
-    return {
-      fijarActiva,
-      modoLibre(activo) {
-        escenas.forEach((e) => (activo ? ioVisible.observe(e) : ioVisible.unobserve(e)));
-      },
-      destruir() {
-        io.disconnect();
-        ioVisible.disconnect();
-      },
-    };
+    return Promise.all(cargas);
   }
 
   /* ---------------------------------------------------------------- Packs, carrito y botón fijo */
@@ -727,8 +657,6 @@
 
     const gsap = window.gsap;
     const ST = window.ScrollTrigger;
-    const Split = window.SplitText;
-    const editor = raiz.hasAttribute('data-editor');
     const base = raiz.dataset.assets || '';
 
     let pedirDistribucion = () => {};
@@ -778,8 +706,10 @@
       clearTimeout(refrescoPendiente);
       refrescoPendiente = setTimeout(() => ST.refresh(), 150);
     };
-    const medios = prepararMedios(raiz, base, refrescar);
-    limpiezas.push(() => medios.destruir());
+    const fotosListas = prepararFotos(raiz, base).then((r) => {
+      refrescar();
+      return r;
+    });
 
     // Contadores de ahorro
     const contadores = qa(raiz, '[data-uc-contador]');
@@ -863,14 +793,12 @@
 
     if (!gsap || !ST) {
       const fin = modoEstatico();
-      medios.modoLibre(true);
       prepararProgresoNativo(raiz, limpiezas);
       limpiezas.push(fin);
       return { destruir: () => limpiezas.forEach((f) => f()) };
     }
 
     gsap.registerPlugin(ST);
-    if (Split) gsap.registerPlugin(Split);
     ST.config({ ignoreMobileResize: true });
 
     const mm = gsap.matchMedia();
@@ -879,48 +807,15 @@
       (contexto) => {
         const { reducida, movil } = contexto.conditions;
         html.classList.toggle('uc-motion', !reducida);
-        const scroller = scrollerActual();
-        const S = { scroller };
+        const S = { scroller: window };
         const limpiar = [];
-
-        /* Lenis conducido por gsap.ticker */
-        let lenis = null;
-        if (!reducida && !editor && window.Lenis) {
-          lenis = new window.Lenis({
-            wrapper: scroller === window ? window : scroller,
-            content: scroller === window ? document.documentElement : scroller,
-            autoRaf: false,
-            lerp: 0.1,
-            smoothWheel: true,
-            syncTouch: false,
-            prevent: (nodo) => !!(nodo.closest && nodo.closest('dialog, [data-lenis-prevent], .ucx-menu, cart-drawer-component')),
-          });
-          lenis.on('scroll', ST.update);
-          const conducir = (tiempo) => lenis.raf(tiempo * 1000);
-          gsap.ticker.add(conducir);
-          gsap.ticker.lagSmoothing(0);
-          const alRefrescar = () => lenis.resize();
-          ST.addEventListener('refresh', alRefrescar);
-          const ro = new ResizeObserver(() => lenis.resize());
-          ro.observe(document.querySelector('main') || document.body);
-          const bloqueo = new MutationObserver(() => (html.hasAttribute('scroll-lock') ? lenis.stop() : lenis.start()));
-          bloqueo.observe(html, { attributes: true, attributeFilter: ['scroll-lock'] });
-          limpiar.push(() => {
-            gsap.ticker.remove(conducir);
-            ST.removeEventListener('refresh', alRefrescar);
-            ro.disconnect();
-            bloqueo.disconnect();
-            lenis.destroy();
-          });
-        }
 
         /* Anclas internas */
         const alAncla = (ev) => {
           const destino = document.querySelector(ev.currentTarget.getAttribute('href'));
           if (!destino) return;
           ev.preventDefault();
-          if (lenis) lenis.scrollTo(destino, { offset: -altoCabecera(), duration: 1.6, easing: (t) => 1 - Math.pow(1 - t, 4) });
-          else destino.scrollIntoView({ behavior: reducida ? 'auto' : 'smooth' });
+          window.scrollTo({ top: destino.getBoundingClientRect().top + window.scrollY - altoCabecera(), behavior: reducida ? 'auto' : 'smooth' });
         };
         qa(raiz, '[data-uc-ancla]').forEach((a) => a.addEventListener('click', alAncla));
         limpiar.push(() => qa(raiz, '[data-uc-ancla]').forEach((a) => a.removeEventListener('click', alAncla)));
@@ -934,35 +829,38 @@
 
         if (reducida) {
           const fin = modoEstatico();
-          medios.modoLibre(true);
           return () => {
             fin();
-            medios.modoLibre(false);
             limpiar.forEach((f) => f());
           };
         }
-        medios.modoLibre(false);
         if (!marco || !escenario) return () => limpiar.forEach((f) => f());
 
-        /* ---------- Un solo marco fijado: hero → proyector a un lado + proyección → escenas de uso ---------- */
-        const escenas = qa(raiz, '[data-uc-uso]');
-        const usosMarco = q(raiz, '[data-uc-usos-marco]');
+        /* ---------- Un solo marco fijado: hero → proyector a un lado + proyección → fotos ---------- */
+        const fotos = qa(raiz, '[data-uc-foto]');
         const velo = q(raiz, '[data-uc-velo]');
-        const lineas = escenas.map((e) => qa(e, '[data-uc-uso-linea]'));
-        const media = escenas.map((e) => q(e, '[data-uc-media]'));
-        const mascara0 = escenas[0] && q(escenas[0], '[data-uc-mascara]');
-        const contra0 = escenas[0] && q(escenas[0], '[data-uc-contra]');
+        const frases = fotos.map((f) => q(f, '[data-uc-frase]'));
+        const media = fotos.map((f) => q(f, '[data-uc-foto-media]'));
+        const mascara0 = fotos[0] && q(fotos[0], '[data-uc-mascara]');
+        const contra0 = fotos[0] && q(fotos[0], '[data-uc-contra]');
 
-        // Calendario del recorrido, en "unidades" de scroll
+        // Calendario del recorrido, en "unidades" de scroll. Las fotos pasan rápido: cortes y fundidos cortos.
         const U0 = 2.3; // primer efecto centrado
-        const TS = U0 + (N - 1) + 0.3; // empieza el zoom con máscara hacia la primera escena
-        const T_ZOOM = 1.7;
-        const T_PASO = 1.2;
-        const T_RETENER = 0.9;
-        const inicioEscena = escenas.map((_, i) => (i === 0 ? TS : TS + T_ZOOM + T_RETENER + (i - 1) * (T_PASO + T_RETENER)));
-        const TV = (escenas.length > 1 ? inicioEscena[escenas.length - 1] + T_PASO : TS + T_ZOOM) + 1.0; // el velo hacia "cómo se usa"
-        const D_VELO = 1.1;
-        const UT = TV + D_VELO + 0.2;
+        const TS = U0 + (N - 1) + 0.3; // empieza el zoom con máscara hacia la primera foto
+        const T_ZOOM = 1.5;
+        const RETENER = 0.55;
+        const ESTILOS = ['fundido', 'corte', 'atras', 'corte', 'fundido']; // cómo entra cada foto a partir de la 2.ª
+        const DURACION = [0.3, 0.1, 0.4, 0.1, 0.3];
+        const dur = fotos.map((_, i) => (i === 0 ? T_ZOOM : DURACION[(i - 1) % DURACION.length]));
+        const inicio = [];
+        const fin = [];
+        fotos.forEach((_, i) => {
+          inicio[i] = i === 0 ? TS : fin[i - 1] + RETENER;
+          fin[i] = inicio[i] + dur[i];
+        });
+        const TV = (fotos.length ? fin[fotos.length - 1] : TS) + RETENER + 0.25; // velo hacia "cómo se usa"
+        const D_VELO = 0.9;
+        const UT = TV + D_VELO + 0.15;
         const UNIDAD = movil ? 0.5 : 0.52; // alturas de pantalla por unidad
 
         const setHeroY = gsap.quickSetter(hero, 'y', 'px');
@@ -1105,66 +1003,65 @@
           halo.style.transform = `translate3d(${lerp(h0.x, pr.cx, ap)}px, ${lerp(h0.y - 40, pr.cy, ap)}px, 0)`;
         }
 
-        /* --- Etapa 2: zoom con máscara hacia la escena 1, paso de cámara entre escenas, velo hacia "cómo se usa" --- */
-        let activaEscena = -2;
-        function escenasEn(u) {
-          if (!M || !escenas.length) return;
+        /* --- Etapa 2: zoom con máscara hacia la foto 1, cortes y fundidos cortos entre fotos, velo hacia "cómo se usa" --- */
+        function fotosEn(u) {
+          if (!M || !fotos.length) return;
           const z1 = limitar((u - TS) / T_ZOOM);
           const ze = sua(z1);
-          const prog = escenas.map((_, i) => (i === 0 ? z1 : limitar((u - inicioEscena[i]) / T_PASO)));
+          const prog = fotos.map((_, i) => (i === 0 ? z1 : limitar((u - inicio[i]) / dur[i])));
           const zv = limitar((u - TV) / D_VELO);
-          escenas.forEach((e, i) => {
-            const siguiente = i + 1 < escenas.length ? prog[i + 1] : 0;
+          fotos.forEach((f, i) => {
+            const siguiente = i + 1 < fotos.length ? prog[i + 1] : 0;
             const visible = prog[i] > 0 && siguiente < 1;
-            e.style.visibility = visible ? 'visible' : 'hidden';
+            f.style.visibility = visible ? 'visible' : 'hidden';
             if (!visible) return;
             let esc;
             let aparece;
-            let opac = 1;
             if (i === 0) {
               const s = M.s0 + (1 - M.s0) * ze;
               mascara0.style.transform = `scale(${s})`;
               mascara0.style.opacity = sua(z1 / 0.22);
               contra0.style.transform = `scale(${1 / s})`;
               esc = 1.3 - 0.3 * ze;
-              aparece = sua((z1 - 0.7) / 0.3);
+              aparece = sua((u - (TS + T_ZOOM * 0.7)) / 0.45);
             } else {
-              opac = sua(prog[i] / 0.75);
-              e.style.opacity = opac;
-              esc = 0.84 + 0.16 * salida(prog[i]);
-              aparece = sua((prog[i] - 0.5) / 0.5);
+              const p = prog[i];
+              const estilo = ESTILOS[(i - 1) % ESTILOS.length];
+              if (estilo === 'corte') {
+                f.style.opacity = sua(p / 0.25);
+                esc = 1.45 - 0.45 * salida(p);
+              } else if (estilo === 'atras') {
+                f.style.opacity = sua(p / 0.7);
+                esc = 0.88 + 0.12 * salida(p);
+              } else {
+                f.style.opacity = sua(p);
+                esc = 1.18 - 0.18 * salida(p);
+              }
+              aparece = sua((u - (fin[i] - 0.05)) / 0.3);
             }
-            const sale = i + 1 < escenas.length ? sua(siguiente / 0.35) : sua(zv / 0.5);
-            const extra = i + 1 < escenas.length ? 1 + 0.22 * sua(siguiente) : 1 + 0.12 * zv;
-            media[i].style.transform = `scale(${esc * extra})`;
-            lineas[i].forEach((l, k) => {
-              const yin = (1 - sua(aparece * 1.3 - k * 0.15)) * 110;
-              l.style.transform = `translate3d(0, ${yin - sale * 110}%, 0)`;
-            });
+            // La foto siguiente la tapa; la última se funde en el velo
+            const sale = i + 1 < fotos.length ? limitar((u - inicio[i + 1]) / Math.max(dur[i + 1] * 0.7, 0.08)) : sua(zv / 0.5);
+            const hasta = i + 1 < fotos.length ? inicio[i + 1] : TV;
+            const deriva = 1 + 0.06 * limitar((u - inicio[i]) / Math.max(hasta - inicio[i], 0.1));
+            const extra = i + 1 < fotos.length ? 1 + 0.1 * sua(siguiente) : 1 + 0.1 * zv;
+            media[i].style.transform = `scale(${esc * deriva * extra})`;
+            frases[i].style.opacity = aparece * (1 - sale);
+            frases[i].style.transform = `translate3d(0, ${(1 - aparece) * 28 - sale * 18}px, 0)`;
           });
           if (velo) velo.style.opacity = sua(zv);
 
-          // La etapa del proyector deja de pintarse cuando la escena 1 ya la tapa por completo
+          // La etapa del proyector deja de pintarse cuando la foto 1 ya la tapa por completo
           const tapada = z1 >= 1;
           marco.style.visibility = tapada ? 'hidden' : '';
           marco.style.opacity = 1 - sua(z1 / 0.55);
           if (z1 > 0.05) ctl.inert = true;
           etapaActiva = !tapada;
-
-          let nueva = -1;
-          prog.forEach((p, i) => {
-            if (p >= 0.5) nueva = i;
-          });
-          if (nueva !== activaEscena) {
-            activaEscena = nueva;
-            medios.fijarActiva(nueva);
-          }
         }
 
         function render(u) {
           uActual = u;
           if (u < TS + T_ZOOM) etapa(u);
-          escenasEn(u);
+          fotosEn(u);
         }
         etapa.listo = false;
 
@@ -1187,8 +1084,7 @@
         function irAEfecto(k) {
           k = limitar(k, 0, N - 1);
           const pos = stPin.start + ((U0 + k) / UT) * (stPin.end - stPin.start);
-          if (lenis) lenis.scrollTo(pos, { duration: 1.1, easing: (t) => 1 - Math.pow(1 - t, 3) });
-          else scroller.scrollTo({ top: pos, behavior: 'smooth' });
+          window.scrollTo({ top: pos, behavior: 'smooth' });
         }
         const alPrev = () => irAEfecto(indiceEfecto - 1);
         const alNext = () => irAEfecto(indiceEfecto + 1);
@@ -1242,28 +1138,10 @@
         alCambiarEfecto = { estatico: () => {} };
         aplicarControles();
 
-        /* ---------- Titulares con revelado por líneas ---------- */
-        const splits = [];
-        if (Split) {
-          qa(raiz, '[data-uc-lineas]').forEach((el) => {
-            splits.push(
-              Split.create(el, {
-                type: 'lines',
-                mask: 'lines',
-                linesClass: 'uc-linea',
-                autoSplit: true,
-                onSplit: (self) =>
-                  gsap.from(self.lines, {
-                    yPercent: 110,
-                    duration: 1.1,
-                    ease: 'power4.out',
-                    stagger: 0.09,
-                    scrollTrigger: { ...S, trigger: el, start: 'top 86%', once: true },
-                  }),
-              })
-            );
-          });
-        }
+        /* ---------- Titulares: aparecen con un desplazamiento corto (sin máscaras que recorten el texto) ---------- */
+        qa(raiz, '[data-uc-lineas]').forEach((el) => {
+          gsap.from(el, { y: 36, autoAlpha: 0, duration: 1, ease: 'power3.out', scrollTrigger: { ...S, trigger: el, start: 'top 88%', once: true } });
+        });
 
         /* ---------- Pasos ---------- */
         qa(raiz, '[data-uc-paso]').forEach((paso, i) => {
@@ -1351,22 +1229,7 @@
           tl.to(intro, { haz: 1, duration: 0.9, ease: 'power2.out' }, 0.62);
           tl.to(intro, { halo: 1, duration: 1.8, ease: 'power2.out' }, 0.6);
           if (lenteEl) tl.to(lenteEl, { keyframes: parpadeo(1) }, 0.5);
-          if (Split) {
-            tl.add(() => {
-              gsap.set(titulo, { opacity: 1 });
-              splits.push(
-                Split.create(titulo, {
-                  type: 'lines',
-                  mask: 'lines',
-                  linesClass: 'uc-linea',
-                  autoSplit: true,
-                  onSplit: (self) => gsap.from(self.lines, { yPercent: 110, duration: 1.2, ease: 'power4.out', stagger: 0.1 }),
-                })
-              );
-            }, 0.7);
-          } else {
-            tl.fromTo(titulo, { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2 }, 0.7);
-          }
+          tl.fromTo(titulo, { y: 36, opacity: 0 }, { y: 0, opacity: 1, duration: 1.2 }, 0.7);
           tl.fromTo(intros, { y: 24, opacity: 0 }, { y: 0, opacity: 1, duration: 1, stagger: 0.08 }, 1.0);
           tl.add(() => ST.refresh(), '>');
         }
@@ -1388,8 +1251,7 @@
           tarde = true;
         });
 
-        if (lenis) lenis.stop();
-        Promise.all([pantallaCarga(raiz, [promesa3d]), con3d]).then(([carga, api]) => {
+        Promise.all([pantallaCarga(raiz, [promesa3d, fotosListas]), con3d]).then(([carga, api]) => {
           if (api) {
             usar3D(api);
             api.medir();
@@ -1397,7 +1259,6 @@
           }
           distribuir();
           const empezar = () => {
-            if (lenis) lenis.start();
             entrada();
           };
           if (carga) {
@@ -1418,7 +1279,6 @@
         distribuir();
 
         return () => {
-          splits.forEach((s) => s.revert());
           limpiar.forEach((f) => f());
         };
       }
@@ -1432,8 +1292,7 @@
     const barra = q(raiz, '[data-uc-progreso]');
     if (!barra) return;
     const alScroll = () => {
-      const s = scrollerActual();
-      const el = s === window ? document.documentElement : s;
+      const el = document.documentElement;
       const max = el.scrollHeight - el.clientHeight;
       barra.style.transform = `scaleX(${max > 0 ? el.scrollTop / max : 0})`;
     };

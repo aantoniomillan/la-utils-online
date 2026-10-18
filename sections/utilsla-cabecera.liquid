@@ -3,21 +3,17 @@
   Mantiene --header-height en <body> para que las escenas fijadas queden justo debajo.
 {%- endcomment -%}
 {{ 'utilsla-cine.css' | asset_url | stylesheet_tag }}
+{% render 'utilsla-fuentes' %}
 
 {%- liquid
   assign menu = section.settings.menu
-  assign f_tit = section.settings.fuente_titulos
-  assign f_tit_it = f_tit | font_modify: 'style', 'italic'
   assign f_txt = section.settings.fuente_texto
   assign f_txt_med = f_txt | font_modify: 'weight', '500'
 -%}
 <style>
-  {{ f_tit | font_face: font_display: 'swap' }}
-  {{ f_tit_it | font_face: font_display: 'swap' }}
   {{ f_txt | font_face: font_display: 'swap' }}
   {{ f_txt_med | font_face: font_display: 'swap' }}
   :root {
-    --ucx-f-tit: {{ f_tit.family }}, {{ f_tit.fallback_families }};
     --ucx-f-txt: {{ f_txt.family }}, {{ f_txt.fallback_families }};
   }
 </style>
@@ -151,7 +147,6 @@
     { "type": "text", "id": "anuncio", "label": "Anuncio", "default": "Envío gratis a España, Francia y Alemania" },
     { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Si no eliges logo se muestra el nombre de la tienda." },
     { "type": "link_list", "id": "menu", "label": "Menú", "default": "main-menu" },
-    { "type": "font_picker", "id": "fuente_titulos", "label": "Titulares (todo el sitio)", "default": "bodoni_moda_n4" },
     { "type": "font_picker", "id": "fuente_texto", "label": "Texto (todo el sitio)", "default": "instrument_sans_n4" }
   ]
 }

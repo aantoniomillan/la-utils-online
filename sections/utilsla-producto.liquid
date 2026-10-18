@@ -4,8 +4,6 @@
 {%- endcomment -%}
 {%- liquid
   assign p = product
-  assign f_tit = section.settings.fuente_titulos
-  assign f_tit_it = f_tit | font_modify: 'style', 'italic'
   assign f_txt = section.settings.fuente_texto
   assign f_txt_med = f_txt | font_modify: 'weight', '500'
   assign base_assets = 'utilsla-cine.css' | asset_url | split: 'utilsla-cine.css' | first
@@ -25,20 +23,15 @@
 -%}
 
 <style>
-  {{ f_tit | font_face: font_display: 'swap' }}
-  {{ f_tit_it | font_face: font_display: 'swap' }}
   {{ f_txt | font_face: font_display: 'swap' }}
   {{ f_txt_med | font_face: font_display: 'swap' }}
   #uc-{{ section.id }} {
-    --uc-f-tit: {{ f_tit.family }}, {{ f_tit.fallback_families }};
     --uc-f-txt: {{ f_txt.family }}, {{ f_txt.fallback_families }};
   }
 </style>
 {{ 'utilsla-cine.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'gsap.min.js' | asset_url }}" defer></script>
 <script src="{{ 'ScrollTrigger.min.js' | asset_url }}" defer></script>
-<script src="{{ 'SplitText.min.js' | asset_url }}" defer></script>
-<script src="{{ 'lenis.min.js' | asset_url }}" defer></script>
 <script src="{{ 'utilsla-cine.js' | asset_url }}" defer></script>
 
 <div
@@ -159,7 +152,6 @@
   "class": "ucx-producto-seccion",
   "settings": [
     { "type": "number", "id": "pack_recomendado", "label": "Pack recomendado (posición de la variante)", "default": 2 },
-    { "type": "font_picker", "id": "fuente_titulos", "label": "Titulares", "default": "bodoni_moda_n4" },
     { "type": "font_picker", "id": "fuente_texto", "label": "Texto", "default": "instrument_sans_n4" }
   ]
 }
