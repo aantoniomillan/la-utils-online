@@ -2,8 +2,7 @@
   UtilsLA · Portada cinematográfica del proyector de luces navideñas.
   Marcado y datos. La animación vive en assets/utilsla-cine.js y el estilo en assets/utilsla-cine.css.
 
-  Fotos: secuencia de 6 fotos a pantalla completa. Cada una usa la imagen elegida en el editor o, si no hay,
-  assets/escena-1.jpg ... assets/escena-6.jpg. Se precargan al abrir la página.
+  Momentos: 3 imágenes (editor o assets/escena-1.jpg ... escena-3.jpg), precargadas al abrir la página.
   Proyector: modelo 3D (assets/utilsla-proyector3d.js, three.js). Si existe assets/proyector.glb se carga; si no, se
   construye por código. En móviles lentos o sin WebGL se usa la imagen: ajuste "Imagen del proyector" o assets/proyector.png.
   Motivos de la proyección: assets/motivo-copo.png, -santa, -arbol, -regalo, -estrella, -baston (blanco sobre transparente);
@@ -236,29 +235,33 @@
     </div>
 
     {%- comment -%}
-      Secuencia de fotos a pantalla completa. Cada foto usa, por este orden: la imagen elegida en el editor
-      o assets/escena-N.jpg (N de 1 a 6). Si no hay ninguna, se ve un fondo oscuro con la frase.
+      Tres momentos con una imagen cada uno (efecto de escena fijada: el fondo cambia de color, el título numerado
+      y la imagen se relevan con el scroll). La imagen sale del editor o de assets/escena-1.jpg a escena-3.jpg.
     {%- endcomment -%}
-    <section class="uc-fotos" data-uc-fotos aria-label="Momentos de Navidad en casa">
+    <section class="uc-fotos" data-uc-fotos aria-label="Dónde brilla la Navidad">
       <div class="uc-fotos__marco" data-uc-fotos-marco>
-        {%- for n in (1..6) -%}
+        {%- for n in (1..3) -%}
           {%- liquid
             assign k_img = 'imagen_' | append: n
+            assign k_tit = 'titulo_' | append: n
             assign k_txt = 'frase_' | append: n
             assign img = section.settings[k_img]
-            assign frase = section.settings[k_txt]
           -%}
           <article class="uc-foto uc-foto--{{ n }}" data-uc-foto {% if img == blank %}data-asset="escena-{{ n }}.jpg"{% endif %}>
             <div class="uc-foto__mascara" data-uc-mascara>
-              <div class="uc-foto__contra" data-uc-contra>
+              <div class="uc-foto__contra" data-uc-contra><span class="uc-foto__fondo"></span></div>
+            </div>
+            <div class="uc-foto__contenido" data-uc-contenido>
+              <h2 class="uc-foto__titulo" data-uc-titulo-foto><span class="uc-foto__n">0{{ n }}</span> {{ section.settings[k_tit] }}</h2>
+              <figure class="uc-foto__tarjeta" data-uc-tarjeta>
                 <div class="uc-foto__media" data-uc-foto-media>
                   {%- if img != blank -%}
                     {{
                       img
-                      | image_url: width: 2000
+                      | image_url: width: 1400
                       | image_tag:
-                        widths: '750, 1200, 1600, 2000',
-                        sizes: '100vw',
+                        widths: '600, 900, 1200, 1400',
+                        sizes: '(min-width: 750px) 40vw, 70vw',
                         loading: 'eager',
                         decoding: 'async',
                         class: 'uc-foto__img',
@@ -266,18 +269,20 @@
                     }}
                   {%- endif -%}
                 </div>
-                <span class="uc-foto__velo" aria-hidden="true"></span>
-              </div>
-            </div>
-            <div class="uc-foto__texto">
-              <p class="uc-foto__num" aria-hidden="true">0{{ n }} / 06</p>
-              <p class="uc-foto__frase" data-uc-frase>{{ frase }}</p>
+              </figure>
+              <p class="uc-foto__frase" data-uc-frase>{{ section.settings[k_txt] }}</p>
+              <p class="uc-foto__cuenta" aria-hidden="true">0{{ n }} / 03</p>
             </div>
             {%- if request.design_mode and img == blank -%}
-              <p class="uc-foto__aviso">Foto {{ n }}: elige una imagen en los ajustes o sube assets/escena-{{ n }}.jpg</p>
+              <p class="uc-foto__aviso">Imagen {{ n }}: elígela en los ajustes o sube assets/escena-{{ n }}.jpg</p>
             {%- endif -%}
           </article>
         {%- endfor -%}
+        <nav class="uc-selector" data-uc-selector aria-label="Ir a un momento">
+          <button type="button" data-uc-ir="0" aria-label="Momento 1">01</button>
+          <button type="button" data-uc-ir="1" aria-label="Momento 2">02</button>
+          <button type="button" data-uc-ir="2" aria-label="Momento 3">03</button>
+        </nav>
         <span class="uc-fotos__velo" data-uc-velo aria-hidden="true"></span>
       </div>
     </section>
@@ -403,24 +408,18 @@
     { "type": "font_picker", "id": "fuente_texto", "label": "Texto", "default": "instrument_sans_n4" },
     { "type": "header", "content": "Proyector" },
     { "type": "image_picker", "id": "imagen_proyector", "label": "Imagen del proyector", "info": "PNG con fondo transparente. También puedes subir assets/proyector.png." },
-    { "type": "header", "content": "Foto 1" },
+    { "type": "header", "content": "Momento 1" },
     { "type": "image_picker", "id": "imagen_1", "label": "Imagen", "info": "O sube assets/escena-1.jpg" },
+    { "type": "text", "id": "titulo_1", "label": "Título", "default": "Salón" },
     { "type": "text", "id": "frase_1", "label": "Frase", "default": "Una noche de salón, con el árbol encendido." },
-    { "type": "header", "content": "Foto 2" },
+    { "type": "header", "content": "Momento 2" },
     { "type": "image_picker", "id": "imagen_2", "label": "Imagen", "info": "O sube assets/escena-2.jpg" },
+    { "type": "text", "id": "titulo_2", "label": "Título", "default": "Fachada" },
     { "type": "text", "id": "frase_2", "label": "Frase", "default": "La fachada se llena de nieve que no se derrite." },
-    { "type": "header", "content": "Foto 3" },
+    { "type": "header", "content": "Momento 3" },
     { "type": "image_picker", "id": "imagen_3", "label": "Imagen", "info": "O sube assets/escena-3.jpg" },
-    { "type": "text", "id": "frase_3", "label": "Frase", "default": "Los regalos brillan antes de abrirse." },
-    { "type": "header", "content": "Foto 4" },
-    { "type": "image_picker", "id": "imagen_4", "label": "Imagen", "info": "O sube assets/escena-4.jpg" },
-    { "type": "text", "id": "frase_4", "label": "Frase", "default": "Noche en casa, con la luz de la Navidad." },
-    { "type": "header", "content": "Foto 5" },
-    { "type": "image_picker", "id": "imagen_5", "label": "Imagen", "info": "O sube assets/escena-5.jpg" },
-    { "type": "text", "id": "frase_5", "label": "Frase", "default": "Los peques persiguen cada copo por la pared." },
-    { "type": "header", "content": "Foto 6" },
-    { "type": "image_picker", "id": "imagen_6", "label": "Imagen", "info": "O sube assets/escena-6.jpg" },
-    { "type": "text", "id": "frase_6", "label": "Frase", "default": "La cena de Nochebuena, con otro ambiente." }
+    { "type": "text", "id": "titulo_3", "label": "Título", "default": "Regalo" },
+    { "type": "text", "id": "frase_3", "label": "Frase", "default": "Los regalos brillan antes de abrirse." }
   ],
   "presets": [{ "name": "UtilsLA cine" }]
 }

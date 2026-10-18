@@ -839,26 +839,26 @@
         /* ---------- Un solo marco fijado: hero → proyector a un lado + proyección → fotos ---------- */
         const fotos = qa(raiz, '[data-uc-foto]');
         const velo = q(raiz, '[data-uc-velo]');
+        const titulosF = fotos.map((f) => q(f, '[data-uc-titulo-foto]'));
+        const tarjetasF = fotos.map((f) => q(f, '[data-uc-tarjeta]'));
         const frases = fotos.map((f) => q(f, '[data-uc-frase]'));
-        const media = fotos.map((f) => q(f, '[data-uc-foto-media]'));
+        const cuentas = fotos.map((f) => q(f, '.uc-foto__cuenta'));
+        const selector = q(raiz, '[data-uc-selector]');
+        const botonesSel = selector ? qa(selector, 'button') : [];
         const mascara0 = fotos[0] && q(fotos[0], '[data-uc-mascara]');
         const contra0 = fotos[0] && q(fotos[0], '[data-uc-contra]');
 
-        // Calendario del recorrido, en "unidades" de scroll. Las fotos pasan rápido: cortes y fundidos cortos.
+        // Calendario del recorrido, en "unidades" de scroll
         const U0 = 2.3; // primer efecto centrado
-        const TS = U0 + (N - 1) + 0.3; // empieza el zoom con máscara hacia la primera foto
+        const TS = U0 + (N - 1) + 0.3; // empieza el zoom con máscara hacia el primer momento
         const T_ZOOM = 1.5;
-        const RETENER = 0.55;
-        const ESTILOS = ['fundido', 'corte', 'atras', 'corte', 'fundido']; // cómo entra cada foto a partir de la 2.ª
-        const DURACION = [0.3, 0.1, 0.4, 0.1, 0.3];
-        const dur = fotos.map((_, i) => (i === 0 ? T_ZOOM : DURACION[(i - 1) % DURACION.length]));
+        const RETENER = 1.5;
+        const T_CAMBIO = 0.9;
         const inicio = [];
-        const fin = [];
         fotos.forEach((_, i) => {
-          inicio[i] = i === 0 ? TS : fin[i - 1] + RETENER;
-          fin[i] = inicio[i] + dur[i];
+          inicio[i] = i === 0 ? TS : i === 1 ? TS + T_ZOOM + RETENER : inicio[i - 1] + T_CAMBIO + RETENER;
         });
-        const TV = (fotos.length ? fin[fotos.length - 1] : TS) + RETENER + 0.25; // velo hacia "cómo se usa"
+        const TV = (fotos.length > 1 ? inicio[fotos.length - 1] + T_CAMBIO : TS + T_ZOOM) + RETENER; // velo hacia "cómo se usa"
         const D_VELO = 0.9;
         const UT = TV + D_VELO + 0.15;
         const UNIDAD = movil ? 0.5 : 0.52; // alturas de pantalla por unidad
@@ -1003,54 +1003,56 @@
           halo.style.transform = `translate3d(${lerp(h0.x, pr.cx, ap)}px, ${lerp(h0.y - 40, pr.cy, ap)}px, 0)`;
         }
 
-        /* --- Etapa 2: zoom con máscara hacia la foto 1, cortes y fundidos cortos entre fotos, velo hacia "cómo se usa" --- */
+        /* --- Etapa 2: zoom con máscara al primer momento; el fondo cambia de color y título, imagen y frase se relevan; velo final --- */
+        let momentoActual = -1;
         function fotosEn(u) {
           if (!M || !fotos.length) return;
           const z1 = limitar((u - TS) / T_ZOOM);
-          const ze = sua(z1);
-          const prog = fotos.map((_, i) => (i === 0 ? z1 : limitar((u - inicio[i]) / dur[i])));
           const zv = limitar((u - TV) / D_VELO);
+          const prog = fotos.map((_, i) => (i === 0 ? z1 : limitar((u - inicio[i]) / T_CAMBIO)));
           fotos.forEach((f, i) => {
             const siguiente = i + 1 < fotos.length ? prog[i + 1] : 0;
             const visible = prog[i] > 0 && siguiente < 1;
             f.style.visibility = visible ? 'visible' : 'hidden';
             if (!visible) return;
-            let esc;
-            let aparece;
+            let entra;
             if (i === 0) {
-              const s = M.s0 + (1 - M.s0) * ze;
+              const s = M.s0 + (1 - M.s0) * sua(z1);
               mascara0.style.transform = `scale(${s})`;
               mascara0.style.opacity = sua(z1 / 0.22);
               contra0.style.transform = `scale(${1 / s})`;
-              esc = 1.3 - 0.3 * ze;
-              aparece = sua((u - (TS + T_ZOOM * 0.7)) / 0.45);
+              entra = sua((u - (TS + T_ZOOM * 0.55)) / 0.7);
             } else {
-              const p = prog[i];
-              const estilo = ESTILOS[(i - 1) % ESTILOS.length];
-              if (estilo === 'corte') {
-                f.style.opacity = sua(p / 0.25);
-                esc = 1.45 - 0.45 * salida(p);
-              } else if (estilo === 'atras') {
-                f.style.opacity = sua(p / 0.7);
-                esc = 0.88 + 0.12 * salida(p);
-              } else {
-                f.style.opacity = sua(p);
-                esc = 1.18 - 0.18 * salida(p);
-              }
-              aparece = sua((u - (fin[i] - 0.05)) / 0.3);
+              f.style.opacity = sua(prog[i] / 0.8);
+              entra = sua((u - (inicio[i] + 0.15)) / 0.7);
             }
-            // La foto siguiente la tapa; la última se funde en el velo
-            const sale = i + 1 < fotos.length ? limitar((u - inicio[i + 1]) / Math.max(dur[i + 1] * 0.7, 0.08)) : sua(zv / 0.5);
-            const hasta = i + 1 < fotos.length ? inicio[i + 1] : TV;
-            const deriva = 1 + 0.06 * limitar((u - inicio[i]) / Math.max(hasta - inicio[i], 0.1));
-            const extra = i + 1 < fotos.length ? 1 + 0.1 * sua(siguiente) : 1 + 0.1 * zv;
-            media[i].style.transform = `scale(${esc * deriva * extra})`;
-            frases[i].style.opacity = aparece * (1 - sale);
-            frases[i].style.transform = `translate3d(0, ${(1 - aparece) * 28 - sale * 18}px, 0)`;
+            const sale = i + 1 < fotos.length ? sua((u - inicio[i + 1]) / 0.5) : sua(zv / 0.5);
+            const v = entra * (1 - sale);
+            const mov = (1 - entra) - sale; // -1 saliendo, +1 entrando
+            titulosF[i].style.opacity = v;
+            titulosF[i].style.transform = `translate3d(0, ${mov * 70}px, 0)`;
+            tarjetasF[i].style.opacity = v;
+            tarjetasF[i].style.transform = `translate3d(0, ${mov * 40}px, 0) rotate(${mov * 12}deg) scale(${0.9 + 0.1 * v})`;
+            frases[i].style.opacity = v;
+            frases[i].style.transform = `translate3d(0, ${mov * 30}px, 0)`;
+            cuentas[i].style.opacity = v;
           });
           if (velo) velo.style.opacity = sua(zv);
+          if (selector) {
+            const vis = sua((u - (TS + 0.6)) / 0.5) * (1 - sua(zv / 0.4));
+            selector.style.opacity = vis;
+            selector.inert = vis < 0.6;
+            let m = 0;
+            fotos.forEach((_, i) => {
+              if (u >= (i === 0 ? TS : inicio[i] + T_CAMBIO * 0.5)) m = i;
+            });
+            if (m !== momentoActual) {
+              momentoActual = m;
+              botonesSel.forEach((b, i) => b.setAttribute('aria-current', String(i === m)));
+            }
+          }
 
-          // La etapa del proyector deja de pintarse cuando la foto 1 ya la tapa por completo
+          // La etapa del proyector deja de pintarse cuando el primer momento ya la tapa por completo
           const tapada = z1 >= 1;
           marco.style.visibility = tapada ? 'hidden' : '';
           marco.style.opacity = 1 - sua(z1 / 0.55);
@@ -1086,6 +1088,15 @@
           const pos = stPin.start + ((U0 + k) / UT) * (stPin.end - stPin.start);
           window.scrollTo({ top: pos, behavior: 'smooth' });
         }
+        const alSelector = (ev) => {
+          const b = ev.target.closest('button[data-uc-ir]');
+          if (!b) return;
+          const i = parseInt(b.dataset.ucIr, 10);
+          const u = i === 0 ? TS + T_ZOOM + RETENER * 0.5 : inicio[i] + T_CAMBIO + RETENER * 0.5;
+          window.scrollTo({ top: stPin.start + (u / UT) * (stPin.end - stPin.start), behavior: 'smooth' });
+        };
+        if (selector) selector.addEventListener('click', alSelector);
+        limpiar.push(() => selector && selector.removeEventListener('click', alSelector));
         const alPrev = () => irAEfecto(indiceEfecto - 1);
         const alNext = () => irAEfecto(indiceEfecto + 1);
         btnPrev.addEventListener('click', alPrev);
