@@ -1,0 +1,54 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign col = collection
+  if col == blank or col.handle == blank
+    assign col = collections['halloween']
+  endif
+  assign titulo = col.title
+  if titulo == blank
+    assign titulo = 'Halloween'
+  endif
+-%}
+
+<header class="uh uh-cab" data-uh="cabecera">
+  <div class="uh-cab__fondo" aria-hidden="true">
+    <canvas class="uh-particulas" data-uh-particulas data-densidad="0.6"></canvas>
+    <div class="uh-luna uh-luna--pequena" data-uh-capa="luna" data-uh-mueve="-18">
+      <span class="uh-luna__disco"></span>
+    </div>
+    <div class="uh-niebla uh-niebla--cerca uh-niebla--cabecera">
+      <span class="uh-niebla__vel"></span>
+    </div>
+  </div>
+  <div class="uh-contenedor uh-cab__contenido">
+    <nav class="uh-migas" aria-label="Ruta de navegación" data-uh-reveal>
+      <a href="{{ routes.root_url }}">Inicio</a>
+      <span aria-hidden="true">/</span>
+      <span aria-current="page">{{ titulo }}</span>
+    </nav>
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="uh-eyebrow" data-uh-reveal>{{ section.settings.eyebrow }}</p>
+    {%- endif -%}
+    <h1 class="uh-cab__titulo" data-uh-reveal>{{ titulo }}</h1>
+    {%- if col.description != blank -%}
+      <div class="uh-cab__texto uh-rte" data-uh-reveal>{{ col.description }}</div>
+    {%- endif -%}
+    {%- if col.products_count > 0 -%}
+      <p class="uh-cab__cuenta" data-uh-reveal>
+        {%- if col.products_count == 1 -%}1 pieza{%- else -%}{{ col.products_count }} piezas{%- endif -%}
+      </p>
+    {%- endif -%}
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Halloween cabecera",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "Colección Halloween" }
+  ]
+}
+{% endschema %}

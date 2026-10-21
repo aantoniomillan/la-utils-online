@@ -1,0 +1,74 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign correo = section.settings.correo | strip
+  assign correo_html = correo | escape
+-%}
+{%- capture enlace_correo -%}<a href="mailto:{{ correo_html }}">{{ correo_html }}</a>{%- endcapture -%}
+
+<section class="uh uh-faq" data-uh="faq" aria-labelledby="uh-faq-titulo-{{ section.id }}">
+  <div class="uh-contenedor uh-faq__rejilla">
+    <header class="uh-faq__cab">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="uh-eyebrow" data-uh-reveal>{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      <h2 class="uh-titulo" id="uh-faq-titulo-{{ section.id }}" data-uh-reveal>{{ section.settings.titulo }}</h2>
+      {%- if correo != blank -%}
+        <p class="uh-faq__contacto" data-uh-reveal>{{ section.settings.texto_contacto }} {{ enlace_correo }}</p>
+      {%- endif -%}
+    </header>
+
+    <div class="uh-faq__lista">
+      {%- for n in (1..4) -%}
+        {%- liquid
+          assign k_p = 'pregunta_' | append: n
+          assign k_r = 'respuesta_' | append: n
+          assign pregunta = section.settings[k_p]
+          assign respuesta = section.settings[k_r]
+        -%}
+        {%- if pregunta != blank and respuesta != blank -%}
+          {%- liquid
+            assign respuesta_html = respuesta | escape | newline_to_br
+            if correo != blank
+              assign respuesta_html = respuesta_html | replace: correo_html, enlace_correo
+            endif
+          -%}
+          <details class="uh-faq__item" name="uh-faq-{{ section.id }}" data-uh-reveal>
+            <summary class="uh-faq__pregunta">
+              <span>{{ pregunta }}</span>
+              <span class="uh-faq__mas" aria-hidden="true"></span>
+            </summary>
+            <div class="uh-faq__respuesta">{{ respuesta_html }}</div>
+          </details>
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Halloween preguntas",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "Preguntas frecuentes" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Título", "default": "Lo que suelen <em>preguntarnos</em>" },
+    { "type": "text", "id": "correo", "label": "Correo de contacto", "info": "Se convierte en enlace donde aparezca escrito en las respuestas.", "default": "lmegias635@gmail.com" },
+    { "type": "text", "id": "texto_contacto", "label": "Texto junto al correo", "default": "¿No encuentras tu duda? Escríbenos a" },
+    { "type": "header", "content": "Plazos de entrega" },
+    { "type": "text", "id": "pregunta_1", "label": "Pregunta", "default": "¿Cuánto tarda en llegar mi pedido?" },
+    { "type": "textarea", "id": "respuesta_1", "label": "Respuesta", "default": "Preparamos el pedido en 1 o 2 días laborables y el envío a España, Francia y Alemania tarda entre 3 y 7 días laborables. Te mandaremos por correo el número de seguimiento." },
+    { "type": "header", "content": "Devoluciones" },
+    { "type": "text", "id": "pregunta_2", "label": "Pregunta", "default": "¿Puedo devolver mi pedido?" },
+    { "type": "textarea", "id": "respuesta_2", "label": "Respuesta", "default": "Sí. Tienes 14 días desde que lo recibes para devolverlo. Escríbenos a lmegias635@gmail.com y te explicamos cómo hacerlo." },
+    { "type": "header", "content": "Pagos" },
+    { "type": "text", "id": "pregunta_3", "label": "Pregunta", "default": "¿Qué formas de pago aceptáis?" },
+    { "type": "textarea", "id": "respuesta_3", "label": "Respuesta", "default": "Pagas en un entorno seguro y cifrado. Al finalizar la compra verás los métodos disponibles, como tarjeta o monedero digital." },
+    { "type": "header", "content": "Contacto" },
+    { "type": "text", "id": "pregunta_4", "label": "Pregunta", "default": "¿Cómo puedo contactar con vosotros?" },
+    { "type": "textarea", "id": "respuesta_4", "label": "Respuesta", "default": "Escríbenos a lmegias635@gmail.com con tu número de pedido y te respondemos lo antes posible." }
+  ],
+  "presets": [{ "name": "Halloween preguntas" }]
+}
+{% endschema %}

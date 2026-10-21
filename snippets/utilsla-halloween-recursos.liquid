@@ -1,0 +1,20 @@
+{{ 'utilsla-halloween.css' | asset_url | stylesheet_tag }}
+
+{%- if con_js -%}
+  <script>
+    (function () {
+      var html = document.documentElement;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      html.classList.add('uh-anim');
+      setTimeout(function () {
+        if (!window.UtilsHalloween || !window.UtilsHalloween.listo) html.classList.remove('uh-anim');
+      }, 6000);
+    })();
+  </script>
+  <script
+    src="{{ 'utilsla-halloween.js' | asset_url }}"
+    defer
+    data-gsap="{{ 'gsap.min.js' | asset_url }}"
+    data-scrolltrigger="{{ 'ScrollTrigger.min.js' | asset_url }}"
+  ></script>
+{%- endif -%}

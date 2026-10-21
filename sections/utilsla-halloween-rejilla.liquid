@@ -1,0 +1,77 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign col = section.settings.coleccion
+  if col == blank
+    assign col = collections['halloween']
+  endif
+  assign hay_productos = false
+  if col.products_count > 0
+    assign hay_productos = true
+  endif
+-%}
+
+<section
+  class="uh uh-coleccion"
+  id="coleccion"
+  data-uh="rejilla"
+  aria-labelledby="uh-coleccion-titulo-{{ section.id }}"
+>
+  <div class="uh-coleccion__aura" aria-hidden="true"></div>
+  <div class="uh-contenedor">
+    <header class="uh-coleccion__cab">
+      <div class="uh-coleccion__textos">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="uh-eyebrow" data-uh-reveal>{{ section.settings.eyebrow }}</p>
+        {%- endif -%}
+        <h2 class="uh-titulo" id="uh-coleccion-titulo-{{ section.id }}" data-uh-reveal>{{ section.settings.titulo }}</h2>
+      </div>
+      {%- if section.settings.texto != blank -%}
+        <p class="uh-coleccion__texto" data-uh-reveal>{{ section.settings.texto }}</p>
+      {%- endif -%}
+    </header>
+
+    {%- if hay_productos -%}
+      {%- render 'utilsla-halloween-lista',
+        productos: col.products,
+        limite: section.settings.max_productos,
+        columnas: section.settings.columnas,
+        primeras: 0
+      -%}
+      {%- if section.settings.ver_todo and col.url != blank -%}
+        <p class="uh-coleccion__pie" data-uh-reveal>
+          <a class="uh-btn uh-btn--contorno" href="{{ col.url }}"><span class="uh-btn__texto">{{ section.settings.ver_todo_texto | default: 'Ver toda la colección' }}</span></a>
+        </p>
+      {%- endif -%}
+    {%- else -%}
+      {%- render 'utilsla-halloween-vacio',
+        titulo: section.settings.vacio_titulo,
+        texto: section.settings.vacio_texto,
+        ayuda: 'Elige una colección en los ajustes de la sección o crea una colección con el nombre de enlace halloween y añade productos.'
+      -%}
+    {%- endif -%}
+  </div>
+  {%- render 'utilsla-halloween-aviso' -%}
+</section>
+
+{% schema %}
+{
+  "name": "Halloween rejilla",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "collection", "id": "coleccion", "label": "Colección", "info": "Si no eliges ninguna se usa la colección con el nombre de enlace halloween." },
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "La colección" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Título", "default": "Piezas para la noche más <em>oscura</em>" },
+    { "type": "textarea", "id": "texto", "label": "Texto", "default": "Una selección pensada para Halloween. Cuando se agoten, tendrás que esperar al año que viene." },
+    { "type": "range", "id": "max_productos", "label": "Productos a mostrar", "min": 2, "max": 24, "step": 1, "default": 8 },
+    { "type": "select", "id": "columnas", "label": "Columnas en escritorio", "options": [{ "value": "3", "label": "3" }, { "value": "4", "label": "4" }], "default": "4" },
+    { "type": "checkbox", "id": "ver_todo", "label": "Mostrar botón de ver toda la colección", "default": true },
+    { "type": "text", "id": "ver_todo_texto", "label": "Texto del botón", "default": "Ver toda la colección" },
+    { "type": "header", "content": "Colección vacía" },
+    { "type": "text", "id": "vacio_titulo", "label": "Título", "default": "La colección se está preparando" },
+    { "type": "textarea", "id": "vacio_texto", "label": "Texto", "default": "Aún no hay piezas disponibles. Vuelve pronto: lo bueno de Halloween siempre llega de noche." }
+  ],
+  "presets": [{ "name": "Halloween rejilla" }]
+}
+{% endschema %}

@@ -1,0 +1,11 @@
+<ul class="uh-rejilla" role="list" style="--uh-cols: {{ columnas | default: 4 }}" data-uh-rejilla>
+  {%- for producto in productos limit: limite -%}
+    {%- liquid
+      assign eager = false
+      if forloop.index <= primeras
+        assign eager = true
+      endif
+    -%}
+    {%- render 'utilsla-halloween-tarjeta', producto: producto, eager: eager -%}
+  {%- endfor -%}
+</ul>

@@ -1,0 +1,59 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+<section class="uh uh-confianza" data-uh="confianza" aria-labelledby="uh-confianza-titulo-{{ section.id }}">
+  <div class="uh-confianza__aura" aria-hidden="true"></div>
+  <div class="uh-contenedor">
+    <header class="uh-confianza__cab">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="uh-eyebrow" data-uh-reveal>{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      <h2 class="uh-titulo" id="uh-confianza-titulo-{{ section.id }}" data-uh-reveal>{{ section.settings.titulo }}</h2>
+    </header>
+
+    <ul class="uh-confianza__lista" role="list">
+      <li class="uh-garantia" data-uh-reveal>
+        <span class="uh-garantia__icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path pathLength="1" d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle pathLength="1" cx="7" cy="17.500" r="1.800" /><circle pathLength="1" cx="17" cy="17.500" r="1.800" /></svg>
+        </span>
+        <h3 class="uh-garantia__titulo">{{ section.settings.titulo_1 }}</h3>
+        <p class="uh-garantia__texto">{{ section.settings.texto_1 }}</p>
+      </li>
+      <li class="uh-garantia" data-uh-reveal>
+        <span class="uh-garantia__icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><path pathLength="1" d="M3 12a9 9 0 1 0 3-6.700L3 8" /><path pathLength="1" d="M3 3v5h5" /></svg>
+        </span>
+        <h3 class="uh-garantia__titulo">{{ section.settings.titulo_2 }}</h3>
+        <p class="uh-garantia__texto">{{ section.settings.texto_2 }}</p>
+      </li>
+      <li class="uh-garantia" data-uh-reveal>
+        <span class="uh-garantia__icono" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false"><rect pathLength="1" x="4" y="11" width="16" height="10" rx="2" /><path pathLength="1" d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+        </span>
+        <h3 class="uh-garantia__titulo">{{ section.settings.titulo_3 }}</h3>
+        <p class="uh-garantia__texto">{{ section.settings.texto_3 }}</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Halloween confianza",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "Compra sin sustos" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Título", "default": "Todo claro, <em>sin letra pequeña</em>" },
+    { "type": "header", "content": "Primera garantía" },
+    { "type": "text", "id": "titulo_1", "label": "Título", "default": "Envío gratis" },
+    { "type": "text", "id": "texto_1", "label": "Texto", "default": "A España, Francia y Alemania." },
+    { "type": "header", "content": "Segunda garantía" },
+    { "type": "text", "id": "titulo_2", "label": "Título", "default": "14 días de devolución" },
+    { "type": "text", "id": "texto_2", "label": "Texto", "default": "Si no te convence, la devuelves." },
+    { "type": "header", "content": "Tercera garantía" },
+    { "type": "text", "id": "titulo_3", "label": "Título", "default": "Pago seguro" },
+    { "type": "text", "id": "texto_3", "label": "Texto", "default": "Pagas en un entorno cifrado, con los métodos habituales." }
+  ],
+  "presets": [{ "name": "Halloween confianza" }]
+}
+{% endschema %}

@@ -1,0 +1,95 @@
+{%- liquid
+  assign variante = producto.selected_or_first_available_variant
+  assign hay_oferta = false
+  assign descuento = 0
+  if variante.compare_at_price > variante.price
+    assign hay_oferta = true
+    assign descuento = variante.compare_at_price | minus: variante.price | times: 100 | divided_by: variante.compare_at_price | round
+  endif
+
+  assign principal = producto.featured_media
+  assign segunda = producto.media[1]
+  assign carga = 'lazy'
+  if eager
+    assign carga = 'eager'
+  endif
+  assign id_titulo = 'uh-tarjeta-' | append: producto.id
+-%}
+<li class="uh-tarjeta" data-uh-reveal>
+  <article class="uh-tarjeta__caja" aria-labelledby="{{ id_titulo }}">
+    <a class="uh-tarjeta__medio" href="{{ producto.url }}" tabindex="-1" aria-hidden="true">
+      {%- if principal != blank -%}
+        {{
+          principal
+          | image_url: width: 800
+          | image_tag:
+            widths: '320, 480, 640, 800',
+            sizes: '(min-width: 1200px) 290px, (min-width: 750px) 30vw, 46vw',
+            loading: carga,
+            decoding: 'async',
+            class: 'uh-tarjeta__img',
+            alt: ''
+        }}
+        {%- if segunda != blank and segunda.media_type == 'image' -%}
+          {{
+            segunda
+            | image_url: width: 800
+            | image_tag:
+              widths: '320, 480, 640, 800',
+              sizes: '(min-width: 1200px) 290px, (min-width: 750px) 30vw, 46vw',
+              loading: 'lazy',
+              decoding: 'async',
+              class: 'uh-tarjeta__img uh-tarjeta__img--segunda',
+              alt: ''
+          }}
+        {%- endif -%}
+      {%- else -%}
+        {{ 'product-1' | placeholder_svg_tag: 'uh-tarjeta__img uh-tarjeta__img--vacio' }}
+      {%- endif -%}
+      <span class="uh-tarjeta__velo"></span>
+    </a>
+
+    {%- if hay_oferta or producto.available == false -%}
+      <div class="uh-tarjeta__etiquetas">
+        {%- if producto.available == false -%}
+          <span class="uh-etiqueta uh-etiqueta--agotado">Agotado</span>
+        {%- elsif hay_oferta -%}
+          <span class="uh-etiqueta uh-etiqueta--oferta">-{{ descuento }}&nbsp;%</span>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    <div class="uh-tarjeta__info">
+      <h3 class="uh-tarjeta__titulo" id="{{ id_titulo }}">
+        <a href="{{ producto.url }}">{{ producto.title }}</a>
+      </h3>
+      <p class="uh-precio">
+        {%- if hay_oferta -%}
+          <span class="visually-hidden">Precio rebajado</span>
+          <span class="uh-precio__actual">{{ variante.price | money }}</span>
+          <span class="visually-hidden">Precio anterior</span>
+          <s class="uh-precio__tachado">{{ variante.compare_at_price | money }}</s>
+        {%- else -%}
+          <span class="visually-hidden">Precio</span>
+          <span class="uh-precio__actual">{{ variante.price | money }}</span>
+        {%- endif -%}
+      </p>
+    </div>
+
+    <div class="uh-tarjeta__accion">
+      {%- if producto.available and variante.available -%}
+        {%- form 'product', producto, class: 'uh-tarjeta__form' -%}
+          <input type="hidden" name="id" value="{{ variante.id }}">
+          <input type="hidden" name="quantity" value="1">
+          <button class="uh-btn uh-btn--contorno uh-btn--bloque" type="submit" data-uh-anadir>
+            <span class="uh-btn__texto" data-uh-anadir-texto>Añadir al carrito</span>
+          </button>
+        {%- endform -%}
+      {%- else -%}
+        <button class="uh-btn uh-btn--contorno uh-btn--bloque" type="button" disabled>
+          <span class="uh-btn__texto">Agotado</span>
+        </button>
+      {%- endif -%}
+    </div>
+  </article>
+</li>

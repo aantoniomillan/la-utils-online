@@ -1,13 +1,37 @@
 {
   "sections": {
+    "hero": {
+      "type": "utilsla-halloween-hero",
+      "settings": {}
+    },
+    "rejilla": {
+      "type": "utilsla-halloween-rejilla",
+      "settings": {
+        "coleccion": "halloween"
+      }
+    },
     "cine": {
       "type": "utilsla-cine",
       "settings": {
         "product": "proyector-de-luces-navidenas",
         "pack_recomendado": 2,
-        "mostrar_carga": true
+        "mostrar_carga": false
       }
+    },
+    "confianza": {
+      "type": "utilsla-halloween-confianza",
+      "settings": {}
+    },
+    "urgencia": {
+      "type": "utilsla-halloween-urgencia",
+      "settings": {
+        "fecha_fin": "2026-10-31T23:59"
+      }
+    },
+    "faq": {
+      "type": "utilsla-halloween-faq",
+      "settings": {}
     }
   },
-  "order": ["cine"]
+  "order": ["hero", "rejilla", "cine", "confianza", "urgencia", "faq"]
 }

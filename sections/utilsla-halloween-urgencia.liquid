@@ -1,0 +1,77 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign fecha_fin = section.settings.fecha_fin | strip | default: '2026-10-31T23:59'
+  assign enlace = section.settings.enlace | default: '#coleccion'
+-%}
+
+<section
+  class="uh uh-urgencia"
+  data-uh="urgencia"
+  data-fin="{{ fecha_fin | escape }}"
+  aria-labelledby="uh-urgencia-titulo-{{ section.id }}"
+>
+  <div class="uh-contenedor">
+    <div class="uh-urgencia__caja" data-uh-reveal>
+      <div class="uh-urgencia__brasas" aria-hidden="true"></div>
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="uh-eyebrow uh-eyebrow--centro">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      <h2 class="uh-titulo uh-urgencia__titulo" id="uh-urgencia-titulo-{{ section.id }}">{{ section.settings.titulo }}</h2>
+
+      <div class="uh-urgencia__activa" data-uh-activa>
+        <div class="uh-cuenta" role="timer" aria-label="{{ section.settings.fecha_texto | escape }}" data-uh-timer>
+          <div class="uh-cuenta__bloque">
+            <span class="uh-cuenta__cifra" data-uh-dias>--</span>
+            <span class="uh-cuenta__etiqueta">Días</span>
+          </div>
+          <div class="uh-cuenta__bloque">
+            <span class="uh-cuenta__cifra" data-uh-horas>--</span>
+            <span class="uh-cuenta__etiqueta">Horas</span>
+          </div>
+          <div class="uh-cuenta__bloque">
+            <span class="uh-cuenta__cifra" data-uh-minutos>--</span>
+            <span class="uh-cuenta__etiqueta">Min</span>
+          </div>
+          <div class="uh-cuenta__bloque">
+            <span class="uh-cuenta__cifra" data-uh-segundos>--</span>
+            <span class="uh-cuenta__etiqueta">Seg</span>
+          </div>
+        </div>
+        {%- if section.settings.fecha_texto != blank -%}
+          <p class="uh-urgencia__fecha">{{ section.settings.fecha_texto }}</p>
+        {%- endif -%}
+        {%- if section.settings.texto != blank -%}
+          <p class="uh-urgencia__texto">{{ section.settings.texto }}</p>
+        {%- endif -%}
+        <a class="uh-btn uh-btn--calabaza" href="{{ enlace }}">
+          <span class="uh-btn__texto">{{ section.settings.boton | default: 'Ver la colección' }}</span>
+          <svg class="uh-btn__flecha" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5" /></svg>
+        </a>
+      </div>
+
+      <div class="uh-urgencia__final" data-uh-final hidden>
+        <p class="uh-urgencia__texto uh-urgencia__texto--final">{{ section.settings.texto_final }}</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Halloween urgencia",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "text", "id": "fecha_fin", "label": "Fecha y hora de fin", "info": "Formato AAAA-MM-DDTHH:MM, en hora de Madrid. El minuto indicado se cuenta entero.", "default": "2026-10-31T23:59" },
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "Cuenta atrás" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Título", "default": "La noche de Halloween <em>se acerca</em>" },
+    { "type": "text", "id": "fecha_texto", "label": "Texto de la fecha", "default": "Hasta el 31 de octubre a las 23:59 (hora de Madrid)" },
+    { "type": "textarea", "id": "texto", "label": "Texto", "default": "Aprovecha la colección mientras queden piezas." },
+    { "type": "text", "id": "boton", "label": "Texto del botón", "default": "Ver la colección" },
+    { "type": "url", "id": "enlace", "label": "Enlace del botón", "info": "Si lo dejas vacío baja a la rejilla de productos de la página." },
+    { "type": "textarea", "id": "texto_final", "label": "Texto al terminar la cuenta atrás", "default": "Halloween ha terminado. Gracias por acompañarnos: muy pronto llegará una nueva colección." }
+  ],
+  "presets": [{ "name": "Halloween urgencia" }]
+}
+{% endschema %}

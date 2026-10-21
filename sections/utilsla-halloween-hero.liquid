@@ -1,0 +1,111 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign cinta = section.settings.cinta
+  assign id_brillo = 'uh-brillo-' | append: section.id
+-%}
+
+<section
+  class="uh uh-hero"
+  data-uh="hero"
+  aria-labelledby="uh-hero-titulo-{{ section.id }}"
+>
+  <div class="uh-hero__fondo" aria-hidden="true">
+    <div class="uh-hero__cielo"></div>
+    {%- if section.settings.particulas -%}
+      <canvas class="uh-particulas" data-uh-particulas data-densidad="1"></canvas>
+    {%- endif -%}
+
+    <div class="uh-luna" data-uh-capa="luna" data-uh-mueve="-26">
+      <span class="uh-luna__disco"></span>
+    </div>
+
+    <svg class="uh-murcielago uh-murcielago--1" viewBox="0 0 24 14" focusable="false"><path d="M12 4 10.5 2 10 5C8.5 3.5 5 3 1 5c2 1 2.500 3 2 5 1.500-1.500 3-1.500 4.500.500C8.500 9 10 9 12 12.500 14 9 15.500 9 16.500 10.500 18 8.500 19.500 8.500 21 10c-.500-2 0-4 2-5-4-2-7.500-1.500-9 0L13.500 2z" /></svg>
+    <svg class="uh-murcielago uh-murcielago--2" viewBox="0 0 24 14" focusable="false"><path d="M12 4 10.5 2 10 5C8.5 3.5 5 3 1 5c2 1 2.500 3 2 5 1.500-1.500 3-1.500 4.500.500C8.500 9 10 9 12 12.500 14 9 15.500 9 16.500 10.500 18 8.500 19.500 8.500 21 10c-.500-2 0-4 2-5-4-2-7.500-1.500-9 0L13.500 2z" /></svg>
+    <svg class="uh-murcielago uh-murcielago--3" viewBox="0 0 24 14" focusable="false"><path d="M12 4 10.5 2 10 5C8.5 3.5 5 3 1 5c2 1 2.500 3 2 5 1.500-1.500 3-1.500 4.500.500C8.500 9 10 9 12 12.500 14 9 15.500 9 16.500 10.500 18 8.500 19.500 8.500 21 10c-.500-2 0-4 2-5-4-2-7.500-1.500-9 0L13.500 2z" /></svg>
+
+    <div class="uh-niebla uh-niebla--lejos" data-uh-capa="niebla-lejos" data-uh-mueve="18">
+      <span class="uh-niebla__vel"></span>
+    </div>
+
+    <svg class="uh-paisaje" data-uh-capa="paisaje" viewBox="0 0 1440 360" preserveAspectRatio="xMidYMax slice" focusable="false">
+      <defs>
+        <radialGradient id="{{ id_brillo }}" cx="50%" cy="50%" r="50%">
+          <stop offset="0" stop-color="#ff7a1a" stop-opacity=".55" />
+          <stop offset="1" stop-color="#ff7a1a" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <path fill="#2a1446" d="M0 360V250C120 220 220 240 340 215C470 190 560 235 700 225C860 212 960 170 1100 195C1230 218 1340 205 1440 190V360Z" />
+      <path fill="#1a0d2b" d="M0 360V285C160 262 300 292 470 276C640 260 760 296 940 280C1100 266 1260 290 1440 270V360Z" />
+      <g fill="#0d0b0e">
+        <path d="M0 360V312C140 296 260 318 420 306C600 292 700 326 900 312C1060 300 1220 322 1440 304V360Z" />
+        <rect x="640" y="222" width="130" height="104" />
+        <path d="M624 226 705 156 786 226z" />
+        <rect x="752" y="132" width="34" height="110" />
+        <path d="M744 134 769 84 794 134z" />
+        <rect x="666" y="168" width="12" height="26" />
+        <path d="M300 318C298 278 302 246 296 212M298 258C275 244 260 232 246 206M299 240C320 228 332 212 342 188M296 220C284 204 282 188 276 168M302 270C325 263 340 260 360 244" fill="none" stroke="#0d0b0e" stroke-width="6" stroke-linecap="round" />
+      </g>
+      <g class="uh-ventanas" fill="#ff9a3c">
+        <rect class="uh-ventana" x="662" y="246" width="16" height="22" rx="2" />
+        <rect class="uh-ventana uh-ventana--2" x="718" y="246" width="16" height="22" rx="2" />
+        <rect class="uh-ventana uh-ventana--3" x="760" y="160" width="12" height="18" rx="2" />
+      </g>
+      <circle cx="900" cy="298" r="46" fill="url(#{{ id_brillo }})" />
+      <ellipse cx="900" cy="298" rx="22" ry="18" fill="#ff7a1a" />
+      <rect x="897" y="276" width="6" height="8" fill="#0d0b0e" />
+      <path fill="#0d0b0e" d="M890 292l5-7 5 7zM902 292l5-7 5 7zM889 302q11 9 22 0l-4-3-3 3-4-3-3 3z" />
+    </svg>
+
+    <div class="uh-niebla uh-niebla--cerca" data-uh-capa="niebla-cerca" data-uh-mueve="-34">
+      <span class="uh-niebla__vel uh-niebla__vel--inversa"></span>
+    </div>
+  </div>
+
+  <div class="uh-contenedor uh-hero__contenido" data-uh-contenido>
+    {%- if section.settings.eyebrow != blank -%}
+      <p class="uh-eyebrow" data-uh-entrada>{{ section.settings.eyebrow }}</p>
+    {%- endif -%}
+    <h1 class="uh-hero__titulo" id="uh-hero-titulo-{{ section.id }}" data-uh-titulo>{{ section.settings.titulo }}</h1>
+    {%- if section.settings.subtitulo != blank -%}
+      <p class="uh-hero__sub" data-uh-entrada>{{ section.settings.subtitulo }}</p>
+    {%- endif -%}
+    <div class="uh-hero__accion" data-uh-entrada>
+      <a class="uh-btn uh-btn--calabaza" href="#coleccion" data-uh-ancla>
+        <span class="uh-btn__texto">{{ section.settings.boton | default: 'Ver la colección' }}</span>
+        <svg class="uh-btn__flecha" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 3v13M5 11.500l5 5 5-5" /></svg>
+      </a>
+    </div>
+  </div>
+
+  {%- if cinta != blank -%}
+    <div class="uh-cinta" aria-hidden="true">
+      <div class="uh-cinta__pista">
+        {%- for i in (1..2) -%}
+          <div class="uh-cinta__grupo">
+            {%- for j in (1..3) -%}
+              <span>{{ cinta }}</span>
+            {%- endfor -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  {%- endif -%}
+</section>
+
+{% schema %}
+{
+  "name": "Halloween hero",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "UtilsLA · Edición limitada" },
+    { "type": "inline_richtext", "id": "titulo", "label": "Título", "info": "Usa cursiva para la palabra destacada.", "default": "Colección <em>Halloween</em>" },
+    { "type": "textarea", "id": "subtitulo", "label": "Subtítulo", "default": "Luz de calabaza, sombras largas y un poco de misterio para tu casa. La noche más oscura del año ya está aquí." },
+    { "type": "text", "id": "boton", "label": "Texto del botón", "info": "Baja hasta la rejilla de productos.", "default": "Ver la colección" },
+    { "type": "text", "id": "cinta", "label": "Cinta en movimiento", "info": "Déjalo vacío para ocultar la cinta.", "default": "Colección Halloween ✦ Edición limitada ✦ Envío gratis a España, Francia y Alemania ✦" },
+    { "type": "checkbox", "id": "particulas", "label": "Partículas flotantes", "default": true }
+  ],
+  "presets": [{ "name": "Halloween hero" }]
+}
+{% endschema %}

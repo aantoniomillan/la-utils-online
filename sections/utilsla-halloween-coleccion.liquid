@@ -1,0 +1,72 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign col = collection
+  if col == blank or col.handle == blank
+    assign col = collections['halloween']
+  endif
+-%}
+
+<section class="uh uh-coleccion uh-coleccion--pagina" id="coleccion" data-uh="rejilla" aria-label="Productos de la colección">
+  <div class="uh-coleccion__aura" aria-hidden="true"></div>
+  <div class="uh-contenedor">
+    {%- paginate col.products by section.settings.por_pagina -%}
+      {%- if col.products.size > 0 -%}
+        {%- render 'utilsla-halloween-lista',
+          productos: col.products,
+          limite: 50,
+          columnas: section.settings.columnas,
+          primeras: 4
+        -%}
+
+        {%- if paginate.pages > 1 -%}
+          {%- assign actual = paginate.current_page | append: '' -%}
+          <nav class="uh-paginas" aria-label="Paginación" data-uh-reveal>
+            {%- if paginate.previous -%}
+              <a class="uh-paginas__flecha" href="{{ paginate.previous.url }}" rel="prev">Anterior</a>
+            {%- endif -%}
+            <ul class="uh-paginas__lista">
+              {%- for parte in paginate.parts -%}
+                <li>
+                  {%- if parte.is_link -%}
+                    <a class="uh-paginas__num" href="{{ parte.url }}" aria-label="Ir a la página {{ parte.title }}">{{ parte.title }}</a>
+                  {%- elsif parte.title == actual -%}
+                    <span class="uh-paginas__num is-actual" aria-current="page">{{ parte.title }}</span>
+                  {%- else -%}
+                    <span class="uh-paginas__puntos">{{ parte.title }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+            {%- if paginate.next -%}
+              <a class="uh-paginas__flecha" href="{{ paginate.next.url }}" rel="next">Siguiente</a>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- else -%}
+        {%- render 'utilsla-halloween-vacio',
+          titulo: section.settings.vacio_titulo,
+          texto: section.settings.vacio_texto,
+          enlace: routes.root_url,
+          enlace_texto: 'Volver al inicio'
+        -%}
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+  {%- render 'utilsla-halloween-aviso' -%}
+</section>
+
+{% schema %}
+{
+  "name": "Halloween colección",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "range", "id": "por_pagina", "label": "Productos por página", "min": 8, "max": 48, "step": 4, "default": 24 },
+    { "type": "select", "id": "columnas", "label": "Columnas en escritorio", "options": [{ "value": "3", "label": "3" }, { "value": "4", "label": "4" }], "default": "4" },
+    { "type": "header", "content": "Colección vacía" },
+    { "type": "text", "id": "vacio_titulo", "label": "Título", "default": "Esta colección está vacía" },
+    { "type": "textarea", "id": "vacio_texto", "label": "Texto", "default": "Todavía no hay piezas aquí. Vuelve pronto: lo bueno de Halloween siempre llega de noche." }
+  ]
+}
+{% endschema %}
