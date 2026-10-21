@@ -16,7 +16,8 @@
         "product": "proyector-de-luces-navidenas",
         "pack_recomendado": 2,
         "mostrar_carga": false
-      }
+      },
+      "disabled": true
     },
     "confianza": {
       "type": "utilsla-halloween-confianza",
@@ -33,5 +34,12 @@
       "settings": {}
     }
   },
-  "order": ["hero", "rejilla", "cine", "confianza", "urgencia", "faq"]
+  "order": [
+    "hero",
+    "rejilla",
+    "cine",
+    "confianza",
+    "urgencia",
+    "faq"
+  ]
 }
