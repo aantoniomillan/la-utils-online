@@ -1,0 +1,236 @@
+{%- render 'utilsla-halloween-recursos', con_js: true -%}
+
+{%- liquid
+  assign p = product
+  assign variante = p.selected_or_first_available_variant
+  assign hay_oferta = false
+  assign descuento = 0
+  if variante.compare_at_price > variante.price
+    assign hay_oferta = true
+    assign descuento = variante.compare_at_price | minus: variante.price | times: 100 | divided_by: variante.compare_at_price | round
+  endif
+  assign fecha_fin = section.settings.fecha_fin | strip | default: '2026-10-31T23:59'
+  assign correo = section.settings.correo | strip
+  assign correo_html = correo | escape
+-%}
+{%- capture enlace_correo -%}<a href="mailto:{{ correo_html }}">{{ correo_html }}</a>{%- endcapture -%}
+
+<section class="uh uh-ficha" data-uh="producto" aria-labelledby="uh-ficha-titulo-{{ section.id }}">
+  <div class="uh-ficha__aura" aria-hidden="true"></div>
+  <div class="uh-contenedor uh-ficha__rejilla">
+    <div class="uh-ficha__galeria">
+      {%- if p.media.size > 0 -%}
+        <ul class="uh-ficha__medios" aria-label="Imágenes de {{ p.title | escape }}" tabindex="0">
+          {%- for medio in p.media -%}
+            <li class="uh-ficha__medio" id="uh-medio-{{ section.id }}-{{ forloop.index }}">
+              {%- case medio.media_type -%}
+                {%- when 'image' -%}
+                  {%- liquid
+                    assign carga = 'lazy'
+                    assign prioridad = 'auto'
+                    if forloop.first
+                      assign carga = 'eager'
+                      assign prioridad = 'high'
+                    endif
+                  -%}
+                  {{
+                    medio
+                    | image_url: width: 1400
+                    | image_tag:
+                      widths: '480, 720, 960, 1200, 1400',
+                      sizes: '(min-width: 990px) 56vw, 100vw',
+                      loading: carga,
+                      fetchpriority: prioridad,
+                      decoding: 'async',
+                      alt: medio.alt | default: p.title
+                  }}
+                {%- when 'video' -%}
+                  {{ medio | video_tag: autoplay: false, controls: true, muted: true, playsinline: true, preload: 'metadata', image_size: '1200x' }}
+                {%- when 'external_video' -%}
+                  {{ medio | external_video_tag }}
+                {%- else -%}
+                  {{ medio | media_tag }}
+              {%- endcase -%}
+            </li>
+          {%- endfor -%}
+        </ul>
+        {%- if p.media.size > 1 -%}
+          <ol class="uh-ficha__miniaturas" aria-label="Elegir imagen">
+            {%- for medio in p.media -%}
+              <li>
+                <a class="uh-ficha__mini" href="#uh-medio-{{ section.id }}-{{ forloop.index }}" aria-label="Ver imagen {{ forloop.index }} de {{ p.media.size }}">
+                  {{ medio.preview_image | image_url: width: 160 | image_tag: loading: 'lazy', decoding: 'async', alt: '' }}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ol>
+        {%- endif -%}
+      {%- else -%}
+        <div class="uh-ficha__medio uh-ficha__medio--vacio">{{ 'product-1' | placeholder_svg_tag }}</div>
+      {%- endif -%}
+    </div>
+
+    <div class="uh-ficha__info">
+      {%- if section.settings.eyebrow != blank -%}
+        <p class="uh-eyebrow">{{ section.settings.eyebrow }}</p>
+      {%- endif -%}
+      <h1 class="uh-ficha__titulo" id="uh-ficha-titulo-{{ section.id }}">{{ p.title }}</h1>
+
+      <div class="uh-ficha__precio">
+        <p class="uh-precio uh-precio--grande">
+          {%- if hay_oferta -%}
+            <span class="visually-hidden">Precio rebajado</span>
+            <span class="uh-precio__actual">{{ variante.price | money }}</span>
+            <span class="visually-hidden">Precio anterior</span>
+            <s class="uh-precio__tachado">{{ variante.compare_at_price | money }}</s>
+            <span class="uh-etiqueta uh-etiqueta--oferta">-{{ descuento }}&nbsp;%</span>
+          {%- else -%}
+            <span class="visually-hidden">Precio</span>
+            <span class="uh-precio__actual">{{ variante.price | money }}</span>
+          {%- endif -%}
+        </p>
+        <p class="uh-ficha__impuestos">IVA incluido. Gastos de envío calculados al pagar.</p>
+      </div>
+
+      {%- if p.available -%}
+        {%- form 'product', p, class: 'uh-tarjeta__form uh-ficha__form', novalidate: 'novalidate' -%}
+          {%- if p.has_only_default_variant -%}
+            <input type="hidden" name="id" value="{{ variante.id }}">
+          {%- else -%}
+            <label class="uh-ficha__etiqueta" for="uh-variante-{{ section.id }}">{{ p.options | join: ' / ' }}</label>
+            <select class="uh-ficha__select" id="uh-variante-{{ section.id }}" name="id">
+              {%- for v in p.variants -%}
+                <option value="{{ v.id }}"{% if v == variante %} selected{% endif %}{% unless v.available %} disabled{% endunless %}>
+                  {{ v.title }} · {{ v.price | money }}{% unless v.available %} (agotado){% endunless %}
+                </option>
+              {%- endfor -%}
+            </select>
+          {%- endif -%}
+          <div class="uh-ficha__compra" id="uh-compra-{{ section.id }}">
+            <label class="visually-hidden" for="uh-cantidad-{{ section.id }}">Cantidad</label>
+            <input class="uh-ficha__cantidad" id="uh-cantidad-{{ section.id }}" type="number" name="quantity" value="1" min="1" max="10" inputmode="numeric">
+            <button class="uh-btn uh-btn--calabaza uh-ficha__boton" type="submit" data-uh-anadir>
+              <span class="uh-btn__texto" data-uh-anadir-texto>Añadir al carrito</span>
+            </button>
+          </div>
+        {%- endform -%}
+      {%- else -%}
+        <button class="uh-btn uh-btn--contorno uh-btn--bloque" type="button" disabled>
+          <span class="uh-btn__texto">Agotado</span>
+        </button>
+      {%- endif -%}
+
+      <ul class="uh-ficha__ventajas" role="list">
+        {%- for n in (1..3) -%}
+          {%- assign k = 'ventaja_' | append: n -%}
+          {%- if section.settings[k] != blank -%}
+            <li>
+              <span class="uh-ficha__icono" aria-hidden="true">
+                {%- case n -%}
+                  {%- when 1 -%}<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></svg>
+                  {%- when 2 -%}<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
+                  {%- else -%}<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
+                {%- endcase -%}
+              </span>
+              {{ section.settings[k] }}
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+
+      {%- if section.settings.mostrar_cuenta -%}
+        <div class="uh-ficha__cuenta" data-uh="urgencia" data-fin="{{ fecha_fin | escape }}">
+          <div class="uh-ficha__cuenta-activa" data-uh-activa>
+            <p class="uh-ficha__cuenta-titulo">{{ section.settings.cuenta_texto }}</p>
+            <div class="uh-cuenta uh-cuenta--mini" role="timer" aria-label="{{ section.settings.cuenta_texto | escape }}" data-uh-timer>
+              <div class="uh-cuenta__bloque"><span class="uh-cuenta__cifra" data-uh-dias>--</span><span class="uh-cuenta__etiqueta">Días</span></div>
+              <div class="uh-cuenta__bloque"><span class="uh-cuenta__cifra" data-uh-horas>--</span><span class="uh-cuenta__etiqueta">Horas</span></div>
+              <div class="uh-cuenta__bloque"><span class="uh-cuenta__cifra" data-uh-minutos>--</span><span class="uh-cuenta__etiqueta">Min</span></div>
+              <div class="uh-cuenta__bloque"><span class="uh-cuenta__cifra" data-uh-segundos>--</span><span class="uh-cuenta__etiqueta">Seg</span></div>
+            </div>
+          </div>
+          <p class="uh-ficha__cuenta-titulo" data-uh-final hidden>{{ section.settings.cuenta_final }}</p>
+        </div>
+      {%- endif -%}
+
+      {%- if p.description != blank -%}
+        <div class="uh-ficha__descripcion">
+          <h2 class="uh-ficha__subtitulo">Descripción</h2>
+          <div class="uh-ficha__rte">{{ p.description }}</div>
+        </div>
+      {%- endif -%}
+
+      <div class="uh-ficha__faq">
+        <h2 class="uh-ficha__subtitulo">Preguntas frecuentes</h2>
+        <div class="uh-faq__lista">
+          {%- for n in (1..4) -%}
+            {%- liquid
+              assign k_p = 'pregunta_' | append: n
+              assign k_r = 'respuesta_' | append: n
+              assign pregunta = section.settings[k_p]
+              assign respuesta = section.settings[k_r]
+            -%}
+            {%- if pregunta != blank and respuesta != blank -%}
+              {%- liquid
+                assign respuesta_html = respuesta | escape | newline_to_br
+                if correo != blank
+                  assign respuesta_html = respuesta_html | replace: correo_html, enlace_correo
+                endif
+              -%}
+              <details class="uh-faq__item" name="uh-ficha-faq-{{ section.id }}">
+                <summary class="uh-faq__pregunta">
+                  <span>{{ pregunta }}</span>
+                  <span class="uh-faq__mas" aria-hidden="true"></span>
+                </summary>
+                <div class="uh-faq__respuesta">{{ respuesta_html }}</div>
+              </details>
+            {%- endif -%}
+          {%- endfor -%}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {%- if p.available -%}
+    <div class="uh-ficha__barra" aria-hidden="true">
+      <span class="uh-ficha__barra-precio">{{ variante.price | money }}</span>
+      <a class="uh-btn uh-btn--calabaza" href="#uh-compra-{{ section.id }}" tabindex="-1">Comprar</a>
+    </div>
+  {%- endif -%}
+
+  {%- render 'utilsla-halloween-aviso' -%}
+</section>
+
+<script type="application/ld+json">
+  {{ p | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Halloween ficha",
+  "tag": "div",
+  "class": "uh-seccion",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Texto superior", "default": "Colección Halloween" },
+    { "type": "header", "content": "Ventajas" },
+    { "type": "text", "id": "ventaja_1", "label": "Ventaja 1", "default": "Envío gratis a España, Francia y Alemania" },
+    { "type": "text", "id": "ventaja_2", "label": "Ventaja 2", "default": "14 días para devolverlo" },
+    { "type": "text", "id": "ventaja_3", "label": "Ventaja 3", "default": "Pago seguro y cifrado" },
+    { "type": "header", "content": "Cuenta atrás" },
+    { "type": "checkbox", "id": "mostrar_cuenta", "label": "Mostrar cuenta atrás", "default": true },
+    { "type": "text", "id": "fecha_fin", "label": "Fecha y hora de fin", "info": "Formato AAAA-MM-DDTHH:MM, en hora de Madrid.", "default": "2026-10-31T23:59" },
+    { "type": "text", "id": "cuenta_texto", "label": "Texto de la cuenta atrás", "default": "Tiempo hasta la noche de Halloween" },
+    { "type": "text", "id": "cuenta_final", "label": "Texto al terminar", "default": "Halloween ha terminado. Gracias por acompañarnos." },
+    { "type": "header", "content": "Preguntas frecuentes" },
+    { "type": "text", "id": "correo", "label": "Correo de contacto", "info": "Se convierte en enlace donde aparezca en las respuestas.", "default": "lmegias635@gmail.com" },
+    { "type": "text", "id": "pregunta_1", "label": "Pregunta 1", "default": "¿Cuánto tarda en llegar?" },
+    { "type": "textarea", "id": "respuesta_1", "label": "Respuesta 1", "default": "Se envía desde España. La entrega habitual es de 2 a 4 días laborables en la Península. Si lo necesitas para una fecha concreta, escríbenos antes de comprar a lmegias635@gmail.com." },
+    { "type": "text", "id": "pregunta_2", "label": "Pregunta 2", "default": "¿Cuánto cuesta el envío?" },
+    { "type": "textarea", "id": "respuesta_2", "label": "Respuesta 2", "default": "Es gratis a España, Francia y Alemania. Al resto de la Unión Europea cuesta 8,99 €. Verás el importe exacto antes de pagar." },
+    { "type": "text", "id": "pregunta_3", "label": "Pregunta 3", "default": "¿Puedo devolverlo?" },
+    { "type": "textarea", "id": "respuesta_3", "label": "Respuesta 3", "default": "Sí. Tienes 14 días naturales desde que lo recibes para devolverlo sin dar motivos. Escríbenos a lmegias635@gmail.com con tu número de pedido." },
+    { "type": "text", "id": "pregunta_4", "label": "Pregunta 4", "default": "¿Cómo pago?" },
+    { "type": "textarea", "id": "respuesta_4", "label": "Respuesta 4", "default": "En una página de pago segura y cifrada. Al finalizar la compra verás los métodos disponibles, como tarjeta o monedero digital." }
+  ]
+}
+{% endschema %}

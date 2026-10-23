@@ -818,3 +818,127 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
   .uh-murcielago { display: none; }
   .uh-cinta__pista { width: auto; flex-wrap: wrap; }
 }
+
+.uh-ficha { padding: 24px 0 120px; background: radial-gradient(120% 60% at 80% 0%, rgba(91, 42, 143, 0.28), transparent 60%), var(--uh-carbon); }
+.uh-ficha__aura { position: absolute; inset: 0 0 auto; height: 520px; background: radial-gradient(40% 50% at 15% 10%, rgba(255, 122, 26, 0.14), transparent 70%); pointer-events: none; }
+.uh-ficha__rejilla { position: relative; display: grid; gap: 28px; }
+.uh-ficha__galeria { min-width: 0; }
+.uh-ficha__medios {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  margin-inline: -16px;
+  padding-inline: 16px;
+}
+.uh-ficha__medios::-webkit-scrollbar { display: none; }
+.uh-ficha__medios:focus-visible { outline: 2px solid var(--uh-calabaza-2); outline-offset: 2px; }
+.uh-ficha__medio {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+  aspect-ratio: 4 / 5;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--uh-linea);
+}
+.uh-ficha__medio img,
+.uh-ficha__medio video,
+.uh-ficha__medio svg { width: 100%; height: 100%; object-fit: contain; }
+.uh-ficha__medio--vacio { background: var(--uh-carbon-2); }
+.uh-ficha__miniaturas { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; scrollbar-width: none; }
+.uh-ficha__mini {
+  display: block;
+  width: 60px;
+  aspect-ratio: 4 / 5;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid var(--uh-linea);
+  transition: border-color 0.3s ease;
+}
+.uh-ficha__mini img { width: 100%; height: 100%; object-fit: contain; }
+.uh-ficha__mini:hover,
+.uh-ficha__mini:focus-visible { border-color: var(--uh-calabaza); outline: none; }
+.uh-ficha__info { display: grid; gap: 20px; align-content: start; min-width: 0; }
+.uh-ficha__titulo {
+  font-family: var(--uh-f-tit);
+  font-weight: 500;
+  font-size: clamp(1.8rem, 6vw, 3rem);
+  line-height: 1.06;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+.uh-precio--grande { align-items: center; font-size: 1.6rem; }
+.uh-precio--grande .uh-precio__tachado { font-size: 1.05rem; }
+.uh-ficha__impuestos { margin-top: 6px; font-size: 0.82rem; color: var(--uh-hueso-2); }
+.uh-ficha__form { display: grid; gap: 10px; }
+.uh-ficha__etiqueta { font-size: 0.85rem; color: var(--uh-hueso-2); }
+.uh-ficha__select,
+.uh-ficha__cantidad {
+  min-height: 52px;
+  border: 1px solid var(--uh-linea);
+  border-radius: 12px;
+  background: var(--uh-carbon-2);
+  color: var(--uh-hueso);
+  font: inherit;
+  font-size: 1rem;
+  padding: 0 14px;
+}
+.uh-ficha__compra { display: grid; grid-template-columns: 76px 1fr; gap: 10px; scroll-margin-top: 120px; }
+.uh-ficha__cantidad { width: 100%; text-align: center; }
+.uh-ficha__select:focus-visible,
+.uh-ficha__cantidad:focus-visible { outline: 2px solid var(--uh-calabaza-2); outline-offset: 2px; }
+.uh-ficha__boton { width: 100%; min-height: 56px; font-size: 1rem; }
+.uh-ficha__ventajas { display: grid; gap: 10px; padding: 16px; border: 1px solid var(--uh-linea); border-radius: 14px; background: rgba(21, 17, 26, 0.7); }
+.uh-ficha__ventajas li { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; line-height: 1.35; }
+.uh-ficha__icono { flex-shrink: 0; display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: rgba(255, 122, 26, 0.14); }
+.uh-ficha__icono svg { width: 18px; height: 18px; fill: none; stroke: var(--uh-calabaza-2); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.uh-ficha__cuenta { display: grid; gap: 10px; padding: 16px; border-radius: 14px; background: linear-gradient(135deg, rgba(91, 42, 143, 0.45), rgba(194, 65, 12, 0.3)); border: 1px solid rgba(255, 122, 26, 0.3); }
+.uh-ficha__cuenta-activa { display: grid; gap: 10px; }
+.uh-ficha__cuenta-activa[hidden],
+.uh-ficha__cuenta-titulo[hidden] { display: none; }
+.uh-ficha__cuenta-titulo { font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--uh-calabaza-2); }
+.uh-cuenta--mini { gap: 6px; max-width: none; }
+.uh-cuenta--mini .uh-cuenta__bloque { padding: 10px 2px 8px; text-align: center; }
+.uh-cuenta--mini .uh-cuenta__cifra { font-size: clamp(1.5rem, 7vw, 2.1rem); }
+.uh-cuenta--mini .uh-cuenta__etiqueta { font-size: 0.6rem; }
+.uh-ficha__subtitulo { font-family: var(--uh-f-tit); font-weight: 500; font-size: 1.4rem; margin-bottom: 12px; }
+.uh-ficha__rte { line-height: 1.7; color: rgba(239, 230, 212, 0.86); overflow-wrap: anywhere; }
+.uh-ficha__rte :where(p, ul, ol, h2, h3) { margin: 0 0 14px; }
+.uh-ficha__rte :where(h2, h3) { font-family: var(--uh-f-tit); font-weight: 500; font-size: 1.12rem; color: var(--uh-hueso); margin-top: 22px; }
+.uh-ficha__rte ul { list-style: none; padding: 0; display: grid; gap: 8px; }
+.uh-ficha__rte ul li { position: relative; padding-left: 22px; }
+.uh-ficha__rte ul li::before { content: ''; position: absolute; left: 4px; top: 0.62em; width: 8px; height: 8px; border-radius: 50%; background: var(--uh-calabaza); }
+.uh-ficha__rte strong { color: var(--uh-hueso); }
+.uh-ficha__rte img { height: auto; border-radius: 10px; }
+.uh-ficha__faq .uh-faq__pregunta { font-size: 1rem; }
+.uh-ficha__barra {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: rgba(13, 11, 14, 0.94);
+  border-top: 1px solid var(--uh-linea);
+  backdrop-filter: blur(8px);
+}
+.uh-ficha__barra-precio { font-weight: 600; font-size: 1.15rem; }
+.uh-ficha__barra .uh-btn { min-height: 48px; padding-inline: 32px; }
+.uh-ficha .uh-aviso { bottom: 84px; }
+@media (min-width: 990px) {
+  .uh-ficha { padding: 48px 0 110px; }
+  .uh-ficha__rejilla { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 56px; align-items: start; }
+  .uh-ficha__galeria { position: sticky; top: 100px; }
+  .uh-ficha__medios { margin-inline: 0; padding-inline: 0; }
+  .uh-ficha__mini { width: 72px; }
+  .uh-ficha__barra { display: none; }
+  .uh-ficha .uh-aviso { bottom: 24px; }
+}
