@@ -1,7 +1,7 @@
 {
   "sections": {
     "carrito": {
-      "type": "utilsla-carrito",
+      "type": "utilsla-halloween-carrito",
       "settings": {}
     }
   },
