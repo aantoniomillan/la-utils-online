@@ -12,6 +12,7 @@
   --uh-hueso: #efe6d4;
   --uh-hueso-2: #b9ad98;
   --uh-linea: rgba(239, 230, 212, 0.14);
+  --uh-foto: 3 / 4; /* formato de todas las fotos de producto (889 × 1200): sin recortes ni bandas */
   --uh-ease: cubic-bezier(0.16, 1, 0.3, 1);
   --uh-f-tit: var(--ucx-f-tit, 'Fraunces UL', Georgia, 'Times New Roman', serif);
   --uh-f-txt: var(--ucx-f-txt, 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif);
@@ -418,7 +419,7 @@ html.uh-anim .uh-hero [data-uh-entrada] { opacity: 0; }
 .uh-tarjeta__medio {
   position: relative;
   display: block;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: var(--uh-foto);
   overflow: hidden;
   background: var(--uh-carbon-3);
 }
@@ -838,7 +839,7 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
 .uh-ficha__medio {
   flex: 0 0 100%;
   scroll-snap-align: center;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: var(--uh-foto);
   border-radius: 14px;
   overflow: hidden;
   background: #fff;
@@ -852,7 +853,7 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
 .uh-ficha__mini {
   display: block;
   width: 60px;
-  aspect-ratio: 4 / 5;
+  aspect-ratio: var(--uh-foto);
   border-radius: 8px;
   overflow: hidden;
   background: #fff;
@@ -951,7 +952,7 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
 .uh-carrito__rejilla.is-actualizando { opacity: 0.6; pointer-events: none; transition: opacity 0.2s ease; }
 .uh-carrito__lineas { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .uh-linea { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 14px; padding: 14px; border: 1px solid var(--uh-linea); border-radius: 16px; background: rgba(21, 17, 26, 0.75); }
-.uh-linea__img { display: block; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; background: var(--uh-carbon-3); }
+.uh-linea__img { display: block; aspect-ratio: var(--uh-foto); border-radius: 10px; overflow: hidden; background: var(--uh-carbon-3); }
 .uh-linea__img img { width: 100%; height: 100%; object-fit: cover; }
 .uh-linea__info { min-width: 0; display: grid; gap: 4px; align-content: start; }
 .uh-linea__nombre { font-family: var(--uh-f-tit); font-size: 1.1rem; line-height: 1.2; text-decoration: none; }
@@ -982,7 +983,7 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
 .uh-carrito__subtitulo { font-family: var(--uh-f-tit); font-weight: 500; font-size: 1.5rem; margin: 0 0 16px; }
 .uh-sugerencias { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
 .uh-sugerencia { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 14px; align-items: center; padding: 12px; border: 1px solid var(--uh-linea); border-radius: 16px; background: rgba(21, 17, 26, 0.6); }
-.uh-sugerencia__img { display: block; aspect-ratio: 4 / 5; border-radius: 10px; overflow: hidden; background: var(--uh-carbon-3); }
+.uh-sugerencia__img { display: block; aspect-ratio: var(--uh-foto); border-radius: 10px; overflow: hidden; background: var(--uh-carbon-3); }
 .uh-sugerencia__img img { width: 100%; height: 100%; object-fit: cover; }
 .uh-sugerencia__info { display: grid; gap: 6px; justify-items: start; min-width: 0; }
 .uh-sugerencia__nombre { font-family: var(--uh-f-tit); font-size: 1.05rem; line-height: 1.2; text-decoration: none; }
@@ -1019,7 +1020,7 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
 .uh-vitrina__marco {
   position: relative;
   display: block;
-  aspect-ratio: 3 / 4;
+  aspect-ratio: var(--uh-foto);
   border-radius: 999px 999px 16px 16px;
   overflow: hidden;
   background: var(--uh-carbon-3);
