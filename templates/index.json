@@ -2,7 +2,12 @@
   "sections": {
     "hero": {
       "type": "utilsla-halloween-hero",
-      "settings": {}
+      "settings": {
+        "eyebrow": "Decoración de Halloween · Se envía desde España",
+        "titulo": "Decoración de <em>Halloween</em> que llega a tiempo",
+        "subtitulo": "Una bruja parlante que sale arrastrándose del suelo y un fantasma que brilla en la oscuridad. Entrega habitual en 2 a 4 días laborables en la Península.",
+        "boton": "Ver la decoración"
+      }
     },
     "rejilla": {
       "type": "utilsla-halloween-rejilla",
@@ -31,7 +36,9 @@
     },
     "faq": {
       "type": "utilsla-halloween-faq",
-      "settings": {}
+      "settings": {
+        "respuesta_1": "Cada ficha indica el plazo de su producto. La decoración de Halloween se envía desde España y la entrega habitual es de 2 a 4 días laborables en la Península; a otros países de la Unión Europea puede tardar algo más. Cuando salga del almacén te mandaremos por correo el número de seguimiento."
+      }
     }
   },
   "order": [

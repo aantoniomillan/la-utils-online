@@ -15,7 +15,7 @@
       "type": "utilsla-pie",
       "settings": {
         "lema": "Colección Halloween. La noche más oscura del año.",
-        "menu": "footer"
+        "menu": "pie-halloween"
       }
     }
   },
