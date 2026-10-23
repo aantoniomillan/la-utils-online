@@ -3,10 +3,33 @@
 {%- liquid
   assign cinta = section.settings.cinta
   assign id_brillo = 'uh-brillo-' | append: section.id
+  assign vitrina = blank
+  if section.settings.mostrar_productos
+    assign elegidos = ''
+    if section.settings.producto_1 != blank
+      assign elegidos = section.settings.producto_1.handle
+    endif
+    if section.settings.producto_2 != blank
+      assign elegidos = elegidos | append: ',' | append: section.settings.producto_2.handle
+    endif
+    assign elegidos = elegidos | remove_first: ',' | split: ','
+    if elegidos.size > 0
+      assign vitrina = elegidos
+    else
+      assign col_vitrina = collections['halloween']
+      if col_vitrina != blank and col_vitrina.products_count > 0
+        assign asas = ''
+        for prod_col in col_vitrina.products limit: 2
+          assign asas = asas | append: prod_col.handle | append: ','
+        endfor
+        assign vitrina = asas | split: ','
+      endif
+    endif
+  endif
 -%}
 
 <section
-  class="uh uh-hero"
+  class="uh uh-hero{% if vitrina != blank %} uh-hero--vitrina{% endif %}"
   data-uh="hero"
   aria-labelledby="uh-hero-titulo-{{ section.id }}"
 >
@@ -76,6 +99,46 @@
         <svg class="uh-btn__flecha" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 3v13M5 11.500l5 5 5-5" /></svg>
       </a>
     </div>
+
+    {%- if vitrina != blank -%}
+      <ul class="uh-vitrina" aria-label="Productos de Halloween">
+        {%- for asa in vitrina -%}
+          {%- assign prod = all_products[asa] -%}
+          {%- if prod == blank or prod.featured_media == blank -%}{%- continue -%}{%- endif -%}
+          {%- liquid
+            assign carga = 'lazy'
+            assign prioridad = 'auto'
+            if forloop.first
+              assign carga = 'eager'
+              assign prioridad = 'high'
+            endif
+          -%}
+          <li class="uh-vitrina__item uh-vitrina__item--{{ forloop.index }}">
+            <a class="uh-vitrina__enlace" href="{{ prod.url }}">
+              <span class="uh-vitrina__marco">
+                {{
+                  prod.featured_media
+                  | image_url: width: 900
+                  | image_tag:
+                    widths: '240, 360, 480, 640, 900',
+                    sizes: '(min-width: 990px) 260px, 42vw',
+                    loading: carga,
+                    fetchpriority: prioridad,
+                    decoding: 'async',
+                    class: 'uh-vitrina__img',
+                    alt: prod.featured_media.alt | default: prod.title
+                  }}
+                <svg class="uh-vitrina__telarana" viewBox="0 0 60 60" aria-hidden="true" focusable="false"><path d="M0 0l60 60M0 0l30 60M0 0l60 30M0 14q8 2 14-14M0 30q16 4 30-30M0 46q24 6 46-46" /></svg>
+              </span>
+              <span class="uh-vitrina__pie">
+                <span class="uh-vitrina__nombre">{{ prod.title | split: '(' | first | strip | escape }}</span>
+                <span class="uh-vitrina__precio">{{ prod.price | money }}</span>
+              </span>
+            </a>
+          </li>
+        {%- endfor -%}
+      </ul>
+    {%- endif -%}
   </div>
 
   {%- if cinta != blank -%}
@@ -104,7 +167,11 @@
     { "type": "textarea", "id": "subtitulo", "label": "Subtítulo", "default": "Luz de calabaza, sombras largas y un poco de misterio para tu casa. La noche más oscura del año ya está aquí." },
     { "type": "text", "id": "boton", "label": "Texto del botón", "info": "Baja hasta la rejilla de productos.", "default": "Ver la colección" },
     { "type": "text", "id": "cinta", "label": "Cinta en movimiento", "info": "Déjalo vacío para ocultar la cinta.", "default": "Colección Halloween ✦ Edición limitada ✦ Envío gratis a España, Francia y Alemania ✦" },
-    { "type": "checkbox", "id": "particulas", "label": "Partículas flotantes", "default": true }
+    { "type": "checkbox", "id": "particulas", "label": "Partículas flotantes", "default": true },
+    { "type": "header", "content": "Fotos de producto" },
+    { "type": "checkbox", "id": "mostrar_productos", "label": "Mostrar los productos en el primer pantallazo", "default": true },
+    { "type": "product", "id": "producto_1", "label": "Producto 1", "info": "Si no eliges ninguno se usan los 2 primeros de la colección halloween." },
+    { "type": "product", "id": "producto_2", "label": "Producto 2" }
   ],
   "presets": [{ "name": "Halloween hero" }]
 }

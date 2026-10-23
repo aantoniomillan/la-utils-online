@@ -1000,3 +1000,79 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
   .uh-resumen { position: sticky; top: 100px; }
   .uh-sugerencias { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+
+/* ---------- Portada: fotos reales del producto en marcos de Halloween ---------- */
+.uh-hero--vitrina .uh-hero__contenido { padding-top: 28px; }
+.uh-vitrina {
+  order: -1;
+  justify-self: stretch;
+  list-style: none;
+  margin: 0 0 6px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 420px;
+}
+.uh-vitrina__item--2 { margin-top: 22px; }
+.uh-vitrina__enlace { display: grid; gap: 8px; text-decoration: none; }
+.uh-vitrina__marco {
+  position: relative;
+  display: block;
+  aspect-ratio: 3 / 4;
+  border-radius: 999px 999px 16px 16px;
+  overflow: hidden;
+  background: var(--uh-carbon-3);
+  border: 2px solid rgba(255, 162, 77, 0.75);
+  box-shadow: 0 0 0 5px rgba(13, 11, 14, 0.85), 0 0 0 6px rgba(255, 122, 26, 0.35), 0 18px 60px -12px rgba(255, 122, 26, 0.55);
+}
+.uh-vitrina__marco::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 62%, rgba(13, 11, 14, 0.55));
+  pointer-events: none;
+}
+.uh-vitrina__img { width: 100%; height: 100%; object-fit: cover; object-position: center top; }
+.uh-vitrina__telarana {
+  position: absolute;
+  z-index: 1;
+  right: 0;
+  bottom: 0;
+  width: 34%;
+  transform: scaleX(-1) scaleY(-1);
+  fill: none;
+  stroke: rgba(239, 230, 212, 0.55);
+  stroke-width: 0.8;
+}
+.uh-vitrina__pie { display: grid; gap: 2px; padding-inline: 4px; }
+.uh-vitrina__nombre { font-size: 0.82rem; line-height: 1.25; color: var(--uh-hueso); text-wrap: balance; }
+.uh-vitrina__precio { font-weight: 600; color: var(--uh-calabaza-2); }
+@media (hover: hover) {
+  .uh-vitrina__marco { transition: transform 0.5s var(--uh-ease), box-shadow 0.5s ease; }
+  .uh-vitrina__enlace:hover .uh-vitrina__marco { transform: translateY(-6px); box-shadow: 0 0 0 5px rgba(13, 11, 14, 0.85), 0 0 0 6px rgba(255, 122, 26, 0.6), 0 26px 80px -10px rgba(255, 122, 26, 0.75); }
+}
+@media (max-width: 989px) {
+  .uh-hero--vitrina .uh-hero__titulo em { font-size: clamp(3rem, 15vw, 7rem); }
+}
+@media (min-width: 990px) {
+  .uh-hero--vitrina .uh-hero__contenido {
+    grid-template-columns: minmax(0, 1fr) 560px;
+    column-gap: 56px;
+    align-items: end;
+    padding-top: 120px;
+  }
+  .uh-hero--vitrina .uh-hero__contenido > :not(.uh-vitrina) { grid-column: 1; }
+  .uh-vitrina {
+    order: 0;
+    grid-column: 2;
+    grid-row: 1 / span 4;
+    align-self: center;
+    max-width: none;
+    gap: 24px;
+    margin: 0;
+  }
+  .uh-vitrina__item--2 { margin-top: 64px; }
+  .uh-vitrina__nombre { font-size: 0.95rem; }
+  .uh-hero--vitrina .uh-hero__titulo em { font-size: clamp(4rem, 9vw, 8.5rem); }
+}
