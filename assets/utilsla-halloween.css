@@ -1077,3 +1077,32 @@ html.uh-anim .uh-garantia.is-visto .uh-garantia__icono rect {
   .uh-vitrina__nombre { font-size: 0.95rem; }
   .uh-hero--vitrina .uh-hero__titulo em { font-size: clamp(4rem, 9vw, 8.5rem); }
 }
+
+.uh-ilustracion {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--uh-morado-3);
+}
+.uh-ilustracion .uh-ilustracion__svg { width: 100%; height: 100%; }
+.uh-ilustracion__nota {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  max-width: calc(100% - 16px);
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--uh-hueso);
+  background: rgba(13, 11, 14, 0.72);
+  border: 1px solid var(--uh-linea);
+}
+.uh-ficha__medio--vacio .uh-ilustracion__nota { bottom: 16px; font-size: 0.85rem; }

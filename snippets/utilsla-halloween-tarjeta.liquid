@@ -44,7 +44,7 @@
           }}
         {%- endif -%}
       {%- else -%}
-        {{ 'product-1' | placeholder_svg_tag: 'uh-tarjeta__img uh-tarjeta__img--vacio' }}
+        {%- render 'utilsla-halloween-ilustracion', producto: producto, sufijo: 'tarjeta', clase: 'uh-tarjeta__img', nota: true -%}
       {%- endif -%}
       <span class="uh-tarjeta__velo"></span>
     </a>

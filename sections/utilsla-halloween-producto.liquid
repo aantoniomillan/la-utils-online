@@ -66,7 +66,7 @@
           </ol>
         {%- endif -%}
       {%- else -%}
-        <div class="uh-ficha__medio uh-ficha__medio--vacio">{{ 'product-1' | placeholder_svg_tag }}</div>
+        <div class="uh-ficha__medio uh-ficha__medio--vacio">{%- render 'utilsla-halloween-ilustracion', producto: p, sufijo: 'ficha', clase: '', nota: true -%}</div>
       {%- endif -%}
     </div>
 
@@ -224,7 +224,7 @@
     { "type": "header", "content": "Preguntas frecuentes" },
     { "type": "text", "id": "correo", "label": "Correo de contacto", "info": "Se convierte en enlace donde aparezca en las respuestas.", "default": "lmegias635@gmail.com" },
     { "type": "text", "id": "pregunta_1", "label": "Pregunta 1", "default": "¿Cuánto tarda en llegar?" },
-    { "type": "textarea", "id": "respuesta_1", "label": "Respuesta 1", "default": "Se envía desde España. La entrega habitual es de 2 a 4 días laborables en la Península. Si lo necesitas para una fecha concreta, escríbenos antes de comprar a lmegias635@gmail.com." },
+    { "type": "textarea", "id": "respuesta_1", "label": "Respuesta 1", "default": "Los pedidos se preparan en 1 a 3 días laborables y la entrega estimada es de 7 a 15 días laborables. Es un plazo orientativo: si lo necesitas para una fecha concreta, escríbenos antes de comprar a lmegias635@gmail.com y te decimos si llega. Cuando salga del almacén te mandamos el número de seguimiento." },
     { "type": "text", "id": "pregunta_2", "label": "Pregunta 2", "default": "¿Cuánto cuesta el envío?" },
     { "type": "textarea", "id": "respuesta_2", "label": "Respuesta 2", "default": "Es gratis a España, Francia y Alemania. Al resto de la Unión Europea cuesta 8,99 €. Verás el importe exacto antes de pagar." },
     { "type": "text", "id": "pregunta_3", "label": "Pregunta 3", "default": "¿Puedo devolverlo?" },

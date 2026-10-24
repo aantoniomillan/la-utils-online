@@ -1,0 +1,98 @@
+{%- liquid
+  assign asa = producto.handle | default: ''
+  assign motivo = 'calabaza'
+  if asa contains 'arana'
+    assign motivo = 'arana'
+  elsif asa contains 'fantasma'
+    assign motivo = 'fantasma'
+  endif
+  assign uid = 'uhi-' | append: producto.id | append: '-' | append: sufijo
+  assign titulo_ilu = producto.title | split: '(' | first | strip | escape
+-%}
+<span class="uh-ilustracion uh-ilustracion--{{ motivo }}{% if clase != blank %} {{ clase }}{% endif %}" role="img" aria-label="Ilustración de {{ titulo_ilu }}. La foto real llegará pronto.">
+  <svg class="uh-ilustracion__svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="{{ uid }}-cielo" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1d0c33" />
+        <stop offset=".62" stop-color="#3b1763" />
+        <stop offset="1" stop-color="#15111a" />
+      </linearGradient>
+      <radialGradient id="{{ uid }}-luz" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#b56cff" stop-opacity=".9" />
+        <stop offset="1" stop-color="#b56cff" stop-opacity="0" />
+      </radialGradient>
+      <radialGradient id="{{ uid }}-calida" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#ffa24d" stop-opacity=".75" />
+        <stop offset="1" stop-color="#ffa24d" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <rect width="300" height="400" fill="url(#{{ uid }}-cielo)" />
+    <circle cx="232" cy="74" r="30" fill="#efe6d4" opacity=".92" />
+    <circle cx="244" cy="66" r="27" fill="#2a1446" opacity=".55" />
+    <g fill="#efe6d4" opacity=".7">
+      <circle cx="40" cy="40" r="1.4" /><circle cx="96" cy="70" r="1" /><circle cx="150" cy="30" r="1.2" /><circle cx="70" cy="128" r="1" /><circle cx="270" cy="150" r="1.2" />
+    </g>
+    {%- case motivo -%}
+      {%- when 'arana' -%}
+        <path d="M150 0V158" stroke="#b9ad98" stroke-width="1.5" />
+        <g fill="none" stroke="#b9ad98" stroke-width=".9" opacity=".35">
+          <path d="M0 0L90 90M0 60L90 90M60 0L90 90M0 30Q40 34 44 0M0 70Q66 78 76 0" />
+        </g>
+        <circle cx="150" cy="210" r="120" fill="url(#{{ uid }}-luz)" opacity=".55" />
+        <g fill="none" stroke="#0d0b0e" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M132 190L84 150L44 170M128 204L70 196L30 232M130 222L76 246L52 300M138 236L104 286L106 344" />
+          <path d="M168 190L216 150L256 170M172 204L230 196L270 232M170 222L224 246L248 300M162 236L196 286L194 344" />
+        </g>
+        <ellipse cx="150" cy="238" rx="38" ry="46" fill="#0d0b0e" />
+        <circle cx="150" cy="178" r="24" fill="#0d0b0e" />
+        <g fill="#c98bff">
+          <circle cx="141" cy="174" r="5" /><circle cx="159" cy="174" r="5" />
+        </g>
+        <g fill="#c98bff">
+          <circle cx="84" cy="150" r="4" /><circle cx="216" cy="150" r="4" /><circle cx="30" cy="232" r="4" /><circle cx="270" cy="232" r="4" />
+          <circle cx="52" cy="300" r="4" /><circle cx="248" cy="300" r="4" /><circle cx="150" cy="226" r="4" /><circle cx="138" cy="250" r="3.5" /><circle cx="162" cy="250" r="3.5" />
+        </g>
+      {%- when 'fantasma' -%}
+        <path d="M0 400V340Q80 322 150 334T300 326V400Z" fill="#0d0b0e" />
+        <g fill="#0d0b0e">
+          <path d="M18 340l4-14 4 14M40 338l3-12 3 12M262 332l4-14 4 14M284 334l3-12 3 12" />
+        </g>
+        {%- for i in (1..3) -%}
+          {%- liquid
+            case i
+              when 1
+                assign gx = 70
+                assign gy = 232
+                assign esc = '.82'
+              when 2
+                assign gx = 150
+                assign gy = 196
+                assign esc = '1'
+              else
+                assign gx = 230
+                assign gy = 240
+                assign esc = '.78'
+            endcase
+          -%}
+          <g transform="translate({{ gx }} {{ gy }}) scale({{ esc }})">
+            <circle cx="0" cy="10" r="70" fill="url(#{{ uid }}-calida)" opacity=".6" />
+            <rect x="-3" y="60" width="6" height="120" fill="#5b4a3a" />
+            <path d="M-40 70V-6C-40 -34 -22 -52 0 -52S40 -34 40 -6V70L28 58L16 72L4 58L-8 72L-20 58L-30 72Z" fill="#efe6d4" />
+            <ellipse cx="-13" cy="-8" rx="6" ry="9" fill="#15111a" />
+            <ellipse cx="13" cy="-8" rx="6" ry="9" fill="#15111a" />
+            <ellipse cx="0" cy="18" rx="7" ry="10" fill="#15111a" />
+          </g>
+        {%- endfor -%}
+      {%- else -%}
+        <path d="M0 400V330Q150 300 300 330V400Z" fill="#0d0b0e" />
+        <circle cx="150" cy="270" r="110" fill="url(#{{ uid }}-calida)" opacity=".6" />
+        <rect x="143" y="196" width="14" height="26" rx="4" fill="#3d2a1a" />
+        <ellipse cx="150" cy="272" rx="78" ry="58" fill="#ff7a1a" />
+        <path d="M150 216V328M112 224Q96 272 112 322M188 224Q204 272 188 322" stroke="#c2410c" stroke-width="3" fill="none" />
+        <path d="M118 258l14-18 14 18zM154 258l14-18 14 18zM114 284q36 26 72 0l-10 8-8-6-8 6-10-6-10 6-8-6-8 6z" fill="#1d0c33" />
+    {%- endcase -%}
+  </svg>
+  {%- if nota -%}
+    <span class="uh-ilustracion__nota">Ilustración · foto real próximamente</span>
+  {%- endif -%}
+</span>

@@ -31,6 +31,8 @@
               <a class="uh-linea__img" href="{{ item.url }}" tabindex="-1" aria-hidden="true">
                 {%- if item.image -%}
                   {{ item.image | image_url: width: 300 | image_tag: widths: '150, 225, 300', sizes: '(min-width: 750px) 120px, 92px', alt: '', loading: 'lazy', decoding: 'async' }}
+                {%- else -%}
+                  {%- render 'utilsla-halloween-ilustracion', producto: item.product, sufijo: 'linea', clase: '', nota: false -%}
                 {%- endif -%}
               </a>
               <div class="uh-linea__info">
@@ -129,6 +131,8 @@
             <a class="uh-sugerencia__img" href="{{ prod.url }}" tabindex="-1" aria-hidden="true">
               {%- if prod.featured_image -%}
                 {{ prod.featured_image | image_url: width: 360 | image_tag: widths: '180, 270, 360', sizes: '(min-width: 750px) 160px, 112px', alt: '', loading: 'lazy', decoding: 'async' }}
+              {%- else -%}
+                {%- render 'utilsla-halloween-ilustracion', producto: prod, sufijo: 'sugerencia', clase: '', nota: false -%}
               {%- endif -%}
             </a>
             <div class="uh-sugerencia__info">
@@ -194,7 +198,7 @@
   "settings": [
     { "type": "collection", "id": "coleccion", "label": "Colección para sugerencias", "info": "Si no eliges ninguna se usa la colección con el nombre de enlace halloween." },
     { "type": "text", "id": "envio", "label": "Línea de envío", "default": "Envío gratis a España, Francia y Alemania" },
-    { "type": "text", "id": "plazo", "label": "Línea de plazo", "default": "Se envía desde España: 2 a 4 días laborables en la Península" }
+    { "type": "text", "id": "plazo", "label": "Línea de plazo", "default": "Entrega estimada: 7 a 15 días laborables" }
   ],
   "presets": [{ "name": "Halloween · carrito" }]
 }
