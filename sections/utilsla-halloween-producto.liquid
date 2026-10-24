@@ -121,7 +121,7 @@
       {%- endif -%}
 
       <ul class="uh-ficha__ventajas" role="list">
-        {%- for n in (1..3) -%}
+        {%- for n in (1..4) -%}
           {%- assign k = 'ventaja_' | append: n -%}
           {%- if section.settings[k] != blank -%}
             <li>
@@ -129,6 +129,7 @@
                 {%- case n -%}
                   {%- when 1 -%}<svg viewBox="0 0 24 24" focusable="false"><path d="M3 7h11v9H3zM14 10h4l3 3v3h-7" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></svg>
                   {%- when 2 -%}<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>
+                  {%- when 4 -%}<svg viewBox="0 0 24 24" focusable="false"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
                   {%- else -%}<svg viewBox="0 0 24 24" focusable="false"><rect x="4" y="11" width="16" height="10" rx="2" /><path d="M8 11V7a4 4 0 0 1 8 0v4" /></svg>
                 {%- endcase -%}
               </span>
@@ -216,6 +217,7 @@
     { "type": "text", "id": "ventaja_1", "label": "Ventaja 1", "default": "Envío gratis a España, Francia y Alemania" },
     { "type": "text", "id": "ventaja_2", "label": "Ventaja 2", "default": "14 días para devolverlo" },
     { "type": "text", "id": "ventaja_3", "label": "Ventaja 3", "default": "Pago seguro y cifrado" },
+    { "type": "text", "id": "ventaja_4", "label": "Ventaja 4 (plazo)", "default": "Entrega estimada: 7 a 15 días laborables" },
     { "type": "header", "content": "Cuenta atrás" },
     { "type": "checkbox", "id": "mostrar_cuenta", "label": "Mostrar cuenta atrás", "default": true },
     { "type": "text", "id": "fecha_fin", "label": "Fecha y hora de fin", "info": "Formato AAAA-MM-DDTHH:MM, en hora de Madrid.", "default": "2026-10-31T23:59" },
