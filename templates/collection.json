@@ -1,17 +1,21 @@
 {
   "sections": {
     "cabecera": {
-      "type": "utilsla-halloween-cabecera-coleccion",
+      "type": "utilsla-navidad-cabecera-coleccion",
       "settings": {}
     },
     "rejilla": {
-      "type": "utilsla-halloween-coleccion",
+      "type": "utilsla-navidad-coleccion",
       "settings": {}
     },
     "confianza": {
-      "type": "utilsla-halloween-confianza",
+      "type": "utilsla-navidad-confianza",
       "settings": {}
     }
   },
-  "order": ["cabecera", "rejilla", "confianza"]
+  "order": [
+    "cabecera",
+    "rejilla",
+    "confianza"
+  ]
 }

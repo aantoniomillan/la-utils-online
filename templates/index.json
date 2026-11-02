@@ -1,42 +1,34 @@
 {
   "sections": {
     "hero": {
-      "type": "utilsla-halloween-hero",
+      "type": "utilsla-navidad-hero",
       "settings": {
-        "eyebrow": "Decoración de Halloween · Envío gratis a España, Francia y Alemania",
-        "titulo": "Decoración de <em>Halloween</em> con luz para tu casa",
-        "subtitulo": "Para la fachada, el jardín y el salón. Precios finales con IVA y 14 días para devolverlo.",
-        "boton": "Ver la decoración"
+        "eyebrow": "Luces y decoración de Navidad · Envío gratis a España, Francia y Alemania",
+        "titulo": "Luces de <em>Navidad</em> para tu casa",
+        "subtitulo": "Para el salón, la ventana, el balcón y la fachada. Precios finales con IVA y 14 días para devolverlo.",
+        "boton": "Ver la colección",
+        "cinta": "Colección de Navidad ✦ Envío gratis a España, Francia y Alemania ✦ 14 días para devolverlo ✦"
       }
     },
     "rejilla": {
-      "type": "utilsla-halloween-rejilla",
+      "type": "utilsla-navidad-rejilla",
       "settings": {
-        "coleccion": "halloween"
+        "coleccion": "navidad"
       }
     },
-    "cine": {
-      "type": "utilsla-cine",
-      "settings": {
-        "product": "proyector-de-luces-navidenas",
-        "pack_recomendado": 2,
-        "mostrar_carga": false
-      },
-      "disabled": true
-    },
     "confianza": {
-      "type": "utilsla-halloween-confianza",
+      "type": "utilsla-navidad-confianza",
       "settings": {}
     },
     "urgencia": {
-      "type": "utilsla-halloween-urgencia",
+      "type": "utilsla-navidad-urgencia",
       "settings": {
-        "fecha_fin": "2026-10-31T23:59",
-        "texto": "La entrega estimada es de 7 a 15 días laborables. Si lo necesitas para el 31, escríbenos antes de pedir y te decimos si llega."
+        "fecha_fin": "2026-11-27T23:59",
+        "texto": "La entrega estimada es de 7 a 15 días laborables. Pidiendo antes del 27 de noviembre lo normal es que llegue antes de Nochebuena. Si lo necesitas para una fecha concreta, escríbenos antes de pedir."
       }
     },
     "faq": {
-      "type": "utilsla-halloween-faq",
+      "type": "utilsla-navidad-faq",
       "settings": {
         "respuesta_1": "Los pedidos se preparan en 1 a 3 días laborables y la entrega estimada es de 7 a 15 días laborables. Es un plazo orientativo: si lo necesitas para una fecha concreta, escríbenos antes de comprar a lmegias635@gmail.com y te decimos si llega. Cuando salga del almacén te mandamos el número de seguimiento."
       }
@@ -45,7 +37,6 @@
   "order": [
     "hero",
     "rejilla",
-    "cine",
     "confianza",
     "urgencia",
     "faq"

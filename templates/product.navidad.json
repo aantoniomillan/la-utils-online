@@ -1,0 +1,9 @@
+{
+  "sections": {
+    "main": {
+      "type": "utilsla-navidad-producto",
+      "settings": {}
+    }
+  },
+  "order": ["main"]
+}

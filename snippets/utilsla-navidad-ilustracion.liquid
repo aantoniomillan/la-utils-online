@@ -1,0 +1,83 @@
+{%- liquid
+  assign asa = producto.handle | default: ''
+  assign motivo = 'arbol'
+  if asa contains 'cortina' or asa contains 'cascada' or asa contains 'carambano' or asa contains 'curtain'
+    assign motivo = 'cortina'
+  elsif asa contains 'proyector' or asa contains 'copo' or asa contains 'projector' or asa contains 'snow'
+    assign motivo = 'copos'
+  endif
+  assign uid = 'uni-' | append: producto.id | append: '-' | append: sufijo
+  assign titulo_ilu = producto.title | split: '(' | first | strip | escape
+-%}
+<span class="uh-ilustracion uh-ilustracion--{{ motivo }}{% if clase != blank %} {{ clase }}{% endif %}" role="img" aria-label="Ilustración de {{ titulo_ilu }}. La foto real llegará pronto.">
+  <svg class="uh-ilustracion__svg" viewBox="0 0 300 400" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="{{ uid }}-cielo" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#08251a" />
+        <stop offset=".62" stop-color="#0f3b2a" />
+        <stop offset="1" stop-color="#111a16" />
+      </linearGradient>
+      <radialGradient id="{{ uid }}-calida" cx="50%" cy="50%" r="50%">
+        <stop offset="0" stop-color="#ffd27a" stop-opacity=".75" />
+        <stop offset="1" stop-color="#ffd27a" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+    <rect width="300" height="400" fill="url(#{{ uid }}-cielo)" />
+    <g fill="#efe6d4" opacity=".75">
+      <circle cx="40" cy="40" r="1.6" /><circle cx="96" cy="70" r="1.2" /><circle cx="150" cy="30" r="1.4" /><circle cx="70" cy="128" r="1.2" /><circle cx="270" cy="150" r="1.4" /><circle cx="236" cy="56" r="1.8" /><circle cx="200" cy="104" r="1.1" />
+    </g>
+    <path d="M0 400V336Q80 318 150 330T300 322V400Z" fill="#e9eff5" opacity=".9" />
+    {%- case motivo -%}
+      {%- when 'cortina' -%}
+        <path d="M30 70H270" stroke="#b9ad98" stroke-width="2" />
+        {%- for i in (0..9) -%}
+          {%- liquid
+            assign x = i | times: 26 | plus: 33
+            assign largo = i | modulo: 3 | times: 30 | plus: 190
+          -%}
+          <path d="M{{ x }} 70V{{ largo | plus: 70 }}" stroke="#b9ad98" stroke-width=".8" opacity=".6" />
+          {%- for j in (0..7) -%}
+            {%- liquid
+              assign y = j | times: 26 | plus: 86
+              assign limite = largo | plus: 70
+            -%}
+            {%- if y < limite -%}
+              <circle cx="{{ x }}" cy="{{ y }}" r="9" fill="url(#{{ uid }}-calida)" />
+              <circle cx="{{ x }}" cy="{{ y }}" r="2.6" fill="#fff4d6" />
+            {%- endif -%}
+          {%- endfor -%}
+        {%- endfor -%}
+      {%- when 'copos' -%}
+        <path d="M0 400V300H300V400Z" fill="#1a2721" opacity=".4" />
+        <path d="M150 330 60 120H240Z" fill="#ffffff" opacity=".06" />
+        <rect x="132" y="318" width="36" height="24" rx="6" fill="#0a0f0d" />
+        <circle cx="150" cy="322" r="7" fill="#ffd27a" />
+        {%- for i in (1..9) -%}
+          {%- liquid
+            assign cx = i | times: 61 | modulo: 220 | plus: 40
+            assign cy = i | times: 47 | modulo: 200 | plus: 60
+            assign esc = i | modulo: 3 | times: 0.3 | plus: 0.6
+          -%}
+          <g transform="translate({{ cx }} {{ cy }}) scale({{ esc }})" stroke="#f4f8ff" stroke-width="3" stroke-linecap="round" opacity=".9">
+            <path d="M0 -16V16M-14 -8 14 8M-14 8 14 -8M-5 -13 0 -8 5 -13M-5 13 0 8 5 13" fill="none" />
+          </g>
+        {%- endfor -%}
+      {%- else -%}
+        <circle cx="150" cy="250" r="120" fill="url(#{{ uid }}-calida)" opacity=".55" />
+        <rect x="140" y="318" width="20" height="22" fill="#3d2a1a" />
+        <path d="M150 112 104 184H124L88 248H112L70 320H230L188 248H212L176 184H196Z" fill="#0a3a26" />
+        <path d="M150 88l7 15 16 2-12 11 3 16-14-8-14 8 3-16-12-11 16-2z" fill="#f2b33d" />
+        <g>
+          <circle cx="138" cy="170" r="5" fill="#ffd27a" /><circle cx="164" cy="196" r="5" fill="#e8414f" />
+          <circle cx="122" cy="228" r="5" fill="#fff4d6" /><circle cx="178" cy="238" r="5" fill="#ffd27a" />
+          <circle cx="150" cy="262" r="5" fill="#e8414f" /><circle cx="104" cy="296" r="5" fill="#ffd27a" />
+          <circle cx="196" cy="300" r="5" fill="#fff4d6" /><circle cx="150" cy="304" r="5" fill="#ffd27a" />
+        </g>
+        <rect x="200" y="314" width="34" height="26" rx="3" fill="#b3202e" />
+        <path d="M217 314V340M200 326H234" stroke="#f2b33d" stroke-width="4" />
+    {%- endcase -%}
+  </svg>
+  {%- if nota -%}
+    <span class="uh-ilustracion__nota">Ilustración · foto real próximamente</span>
+  {%- endif -%}
+</span>
